@@ -117,11 +117,11 @@ class TestChadoGffExporter:
     		assert self.chadoGffExporter.writedbentrypath == '/software/pathogen/projects/artemis/current/etc/writedb_entry'
     		assert self.chadoGffExporter.slice_size == 10
     		assert self.chadoGffExporter.queue == 'basement'
+    		assert self.chadoGffExporter.targetpath == '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
     		assert self.chadoGffExporter.finalresultpath == self.chadoGffExporter.targetpath + '/results'
     		assert self.chadoGffExporter.scriptpath == self.chadoGffExporter.targetpath + '/scripts'
     		assert self.chadoGffExporter.logpath == self.chadoGffExporter.targetpath + '/logs'
     		assert self.chadoGffExporter.statuspath == self.chadoGffExporter.targetpath + '/status'
-    		assert self.chadoGffExporter.statuspath.endswith('/status')
 	
 	
 	def test_07_read_organism_list_from_file(self):
@@ -205,7 +205,6 @@ class TestChadoGffExporter:
 	
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
-    		target = '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
     		
     		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -213,11 +212,11 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.create_folder_structure()
 		
 		# Then
-		assert os.path.isdir(target + '/results')
-		assert os.path.isdir(target + '/scripts')
-		assert os.path.isdir(target + '/logs')
-		assert os.path.isdir(target + '/status')
-		assert os.path.isdir(target + '/results')
+		assert os.path.isdir(self.chadoGffExporter.targetpath + '/results')
+		assert os.path.isdir(self.chadoGffExporter.targetpath + '/scripts')
+		assert os.path.isdir(self.chadoGffExporter.targetpath + '/logs')
+		assert os.path.isdir(self.chadoGffExporter.targetpath + '/status')
+		assert os.path.isdir(self.chadoGffExporter.targetpath + '/results')
 	
 	
 	@unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
@@ -225,7 +224,6 @@ class TestChadoGffExporter:
 	
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
-    		target = '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
     		
     		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -235,6 +233,12 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.run_jobs = False
 		
 		self.chadoGffExporter.execute_export()
+		
+		# Then
+		# We should now have four generated files [scripts] based on the current test organism list file
+		list = os.listdir(self.chadoGffExporter.scriptpath) # dir is your directory path
+		num_scripts = len(list)
+		assert num_scripts == 4
 	
 		
 		

@@ -89,9 +89,9 @@ class ChadoGffExporter:
 	
 		self.read_program_arguments(self.prog_args)
 		self.read_configuration()
-		self.display_configuration()
-		#self.create_folder_structure()
-		#self.execute_export()
+		#self.display_configuration()
+		self.create_folder_structure()
+		self.execute_export()
 		
 		
 	#
@@ -368,7 +368,7 @@ class ChadoGffExporter:
 		   
 			if self.run_jobs_flag == True:
 				print("starting job %d -- %s" % (i, scriptname))
-				#self.run_bash(execline)
+				self.run_bash(execline)
 
 # ================= Run it =====================================
 
