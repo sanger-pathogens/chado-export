@@ -1,0 +1,46 @@
+##########################################
+# Please edit this file to specify which
+# organisms you need to export to gff.
+# FOR UNIT TESTS ONLY.
+##########################################
+
+Bsaltans
+Bxylophilus
+Eacervulina
+Ebrunetti
+Egranulosus
+Emaxima
+Emitis
+Emultilocularis
+Enecatrix
+Epraecox
+Etenella
+Gpallida
+Hmicrostoma
+Lbraziliensis
+Ldonovani_BPK282A1
+Linfantum
+Lmajor
+Lmexicana
+Ncaninum
+Pberghei
+Pchabaudi
+Pfalciparum
+Pgallinaceum
+Pknowlesi
+Pmalariae
+Povale
+Preichenowi
+Prelictum
+PvivaxP01
+Pyoelii
+Sjaponicum
+Smansoni
+Tannulata
+Tbruceibrucei927
+Tbruceigambiense
+TbruceiLister427
+Tcongolense
+Tcruzi
+Tsolium
+Tvivax

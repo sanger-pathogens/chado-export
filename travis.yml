@@ -1,0 +1,12 @@
+language: python
+addons:
+  apt:
+    packages:
+python:
+  - "3.4"
+sudo: false
+install:
+script:
+  - "python setup.py test"
+env:
+  - TRAVIS_BUILD=yes
