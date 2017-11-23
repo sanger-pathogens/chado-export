@@ -41,13 +41,13 @@ class TestChadoGffExporter:
 
 	def test_01_read_program_arguments1(self):
     
-    		# Given
+		# Given
 		args = ['program_name']
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
     		
-    		# Then
+		# Then
 		assert self.chadoGffExporter.configfile == TestChadoGffExporter.DEFAULT_INI_FILE
 		assert self.chadoGffExporter.org_list_file == TestChadoGffExporter.DEFAULT_ORG_LIST_FILE
 		assert self.chadoGffExporter.dump_all == False
@@ -58,10 +58,10 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-a']
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
     		
-    		# Then
+		# Then
 		assert self.chadoGffExporter.dump_all == True
 		
 	def test_03_read_program_arguments3(self):
@@ -69,10 +69,10 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-i', '/somedirectory/config.ini']
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
     		
-    		# Then
+		# Then
 		assert self.chadoGffExporter.configfile == '/somedirectory/config.ini'
 		
 	def test_04_read_program_arguments4(self):
@@ -80,10 +80,10 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-f', '/somedirectory/organism.list']
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
     		
-    		# Then
+		# Then
 		assert self.chadoGffExporter.org_list_file == '/somedirectory/organism.list'
 		
 	def test_05_read_program_arguments5(self):
@@ -91,10 +91,10 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-a', '-i', '/somedirectory/config.ini', '-f', '/somedirectory/organism.list']
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
     		
-    		# Then
+		# Then
 		assert self.chadoGffExporter.configfile == '/somedirectory/config.ini'
 		assert self.chadoGffExporter.dump_all == True
 		assert self.chadoGffExporter.org_list_file == '/somedirectory/organism.list'
@@ -102,26 +102,26 @@ class TestChadoGffExporter:
 	
 	def test_06_read_configuration(self):
     
-    		# Given
+		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE]
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		
 		print('config file: '+self.chadoGffExporter.configfile)
 		self.chadoGffExporter.read_configuration()
-    		self.chadoGffExporter.display_configuration()
+		self.chadoGffExporter.display_configuration()
     		
-    		# Then
-    		assert self.chadoGffExporter.gtbin == '/software/pathogen/external/apps/usr/local/genometools-1.5.9/bin/gt'
-    		assert self.chadoGffExporter.writedbentrypath == '/software/pathogen/projects/artemis/current/etc/writedb_entry'
-    		assert self.chadoGffExporter.slice_size == 10
-    		assert self.chadoGffExporter.queue == 'basement'
-    		assert self.chadoGffExporter.targetpath == '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
-    		assert self.chadoGffExporter.finalresultpath == self.chadoGffExporter.targetpath + '/results'
-    		assert self.chadoGffExporter.scriptpath == self.chadoGffExporter.targetpath + '/scripts'
-    		assert self.chadoGffExporter.logpath == self.chadoGffExporter.targetpath + '/logs'
-    		assert self.chadoGffExporter.statuspath == self.chadoGffExporter.targetpath + '/status'
+		# Then
+		assert self.chadoGffExporter.gtbin == '/software/pathogen/external/apps/usr/local/genometools-1.5.9/bin/gt'
+		assert self.chadoGffExporter.writedbentrypath == '/software/pathogen/projects/artemis/current/etc/writedb_entry'
+		assert self.chadoGffExporter.slice_size == 10
+		assert self.chadoGffExporter.queue == 'basement'
+		assert self.chadoGffExporter.targetpath == '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
+		assert self.chadoGffExporter.finalresultpath == self.chadoGffExporter.targetpath + '/results'
+		assert self.chadoGffExporter.scriptpath == self.chadoGffExporter.targetpath + '/scripts'
+		assert self.chadoGffExporter.logpath == self.chadoGffExporter.targetpath + '/logs'
+		assert self.chadoGffExporter.statuspath == self.chadoGffExporter.targetpath + '/status'
 	
 	
 	def test_07_read_organism_list_from_file(self):
@@ -129,7 +129,7 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 		organisms = self.chadoGffExporter.read_organism_list_from_file()
@@ -144,7 +144,7 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-a', '-i', 'test/'+TestChadoGffExporter.INI_FILE]
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 		
@@ -165,7 +165,7 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 
@@ -185,7 +185,7 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE2]
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 
@@ -206,7 +206,7 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 		self.chadoGffExporter.create_folder_structure()
@@ -225,7 +225,7 @@ class TestChadoGffExporter:
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
-    		# When
+		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 		self.chadoGffExporter.create_folder_structure()
