@@ -214,7 +214,7 @@ class ChadoGffExporter:
 			self.conn.close()
 
 		except Exception as err:
-			print "Unable to close database connection: %s" % str(err)
+			print("Unable to close database connection: %s" % str(err))
 
 
 	#
