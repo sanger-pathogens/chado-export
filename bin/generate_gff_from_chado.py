@@ -1,9 +1,6 @@
 #!/usr/bin/env python2
 
 import sys
-sys.path.append('/software/pathogen/external/lib/general_python')
-sys.path.append('/software/pathogen/external/lib/python2.7/site-packages/psycopg2-2.5-py2.7-linux-x86_64.egg/')
-sys.path.append('/software/pathogen/internal/prod/lib')
 import psycopg2
 import os
 import subprocess
@@ -81,7 +78,7 @@ class ChadoGffExporter:
 	def run_jobs(self, value):
 		self.run_jobs_flag = value
 	
-		
+	
 	#
 	# Top-level function to run the export
 	#
@@ -185,7 +182,7 @@ class ChadoGffExporter:
 	# Run a bash shell process.
 	#
 	def run_bash(self, cmd):
-    		subprocess.Popen(cmd, shell=True, executable='/bin/bash')
+		subprocess.Popen(cmd, shell=True, executable='/bin/bash')
 
 
 	#
@@ -195,16 +192,16 @@ class ChadoGffExporter:
 	
 		try:
 		
-	    		self.conn = psycopg2.connect("dbname='" + self.config.get('Connection', 'database') + "' " +
+			self.conn = psycopg2.connect("dbname='" + self.config.get('Connection', 'database') + "' " +
 	                            "user='" + self.config.get('Connection', 'user') + "' " +
 	                            "host='" + self.config.get('Connection', 'host') + "' " +
 	                            "password='" + self.config.get('Connection', 'password') + "' " +
 	                            "port='" + self.config.get('Connection', 'port') + "'")
 			self.conn.autocommit = True
-				                            
+
 		except Exception as err:
-	    		print "Unable to connect to the database: %s" % str(err)
-	    		exit(1)
+			print "Unable to connect to the database: %s" % str(err)
+			exit(1)
 
 
 	#
@@ -214,39 +211,39 @@ class ChadoGffExporter:
 	
 		try:
 		
-	    		self.conn.close()
-				                            
+			self.conn.close()
+
 		except Exception as err:
-	    		print "Unable to close database connection: %s" % str(err)
-	  
-	    		
+			print "Unable to close database connection: %s" % str(err)
+
+
 	#
 	# Create any required directories and clean up any old ones.
 	#
 	def create_folder_structure(self):
-    	
-    		if self.targetpath == '' or self.targetpath == '/':
-    			raise Exception('The target_path GFF file directory has not been set in the configuration file. Please create it or change it in the configuration file, and then re-run.')
-    		
-    		if not os.path.isdir(self.targetpath):
+
+		if self.targetpath == '' or self.targetpath == '/':
+			raise Exception('The target_path GFF file directory has not been set in the configuration file. Please create it or change it in the configuration file, and then re-run.')
+
+		if not os.path.isdir(self.targetpath):
 			raise Exception('The target GFF file directory ' + self.targetpath + ' does not exist. Please create it or change it in the configuration file, and then re-run.')
 			
 		# make dirs if required
 		for dir in [self.statuspath, self.logpath, self.scriptpath, self.finalresultpath]:
-		    if not os.path.isdir(dir):
-		        os.makedirs(dir)
+			if not os.path.isdir(dir):
+				os.makedirs(dir)
 		
 		# clean up old status files
 		for root, dirs, files in os.walk(self.statuspath, topdown=False):
-		    for name in files:
-		        os.unlink(os.path.join(root, name))
+			for name in files:
+				os.unlink(os.path.join(root, name))
 		# clean up old script files
 		for root, dirs, files in os.walk(self.scriptpath, topdown=False):
-		    for name in files:
-		        os.unlink(os.path.join(root, name))
+			for name in files:
+				os.unlink(os.path.join(root, name))
 		for root, dirs, files in os.walk(self.logpath, topdown=False):
-		    for name in files:
-		        os.unlink(os.path.join(root, name))
+			for name in files:
+				os.unlink(os.path.join(root, name))
 
 
 	#
@@ -263,14 +260,14 @@ class ChadoGffExporter:
 			
 			try:
 			
-			    cur = self.conn.cursor()
-			    cur.execute("select o.common_name as commonName " +
+				cur = self.conn.cursor()
+				cur.execute("select o.common_name as commonName " +
 			                "from organismprop op " +
 			                "left join cvterm cv on op.type_id = cv.cvterm_id " +
 			                "left join organism o on o.organism_id = op.organism_id " +
 			                "where cv.name = 'genedb_public' and op.value = 'yes';")
-			    rows = cur.fetchall()
-			    
+				rows = cur.fetchall()
+
 			finally:
 				cur.close()
 				self.close_database_connection()
@@ -282,7 +279,7 @@ class ChadoGffExporter:
 						continue
 					res.append(str(elem[0]))
 				yield(res)
-		           
+
 		else:
 			rows = self.read_organism_list_from_file()
 			for i in xrange(0, len(rows), size):
@@ -309,19 +306,19 @@ class ChadoGffExporter:
 				orgs.append(org)
 				runstr = runstr + " -o " + org + " "
 				scriptname = scriptname + org
-		      
+
 			runstr = runstr + " -x " + self.targetpath + " -d " + self.configfile + " -f 3000"
-		   
+
 			tf = open(self.scriptpath + "/" + scriptname, "w+")
 			# construct per-node script
 			tf.write("#!/bin/bash\n")
-		   
+
 			for org in sl:
 				orgpath = self.resultbasepath + "/" + org
 				tf.write("rm -rf " + orgpath + "\n")
-		       
+
 			tf.write(runstr + "\n")
-		   
+
 			for org in sl:
 				orgpath = self.resultbasepath + "/" + org
 				# flatten directory structure
@@ -353,19 +350,19 @@ class ChadoGffExporter:
 				# make GAFs
 				tf.write("get_GO_association.pl -type transcript -o " + org + " > " + self.finalresultpath + "/" + org + ".gaf \n")
 				tf.write("\n")
-		       
+
 			tf.write("touch " + self.statuspath + "/" + scriptname + ".done\n")
 			tf.close()
 			os.chmod(self.scriptpath + "/" + scriptname, 0775)
-		   
+
 			#submit script to LSF
-			execline = "source /etc/bashrc; bsub -J dump" + str(i) + " -q " + self.queue + " -n2  " + \
+			execline = "source /etc/bashrc; bsub -J chadoexport" + str(i) + " -q " + self.queue + " -n2  " + \
 		              "-R 'select[mem>3500] rusage[mem=3500] span[hosts=1]' -M 3500 " + \
 		              "-o " + self.logpath + "/" + scriptname  + ".o " + \
 		              "-e " + self.logpath + "/" + scriptname + ".e " + \
 		              str(self.scriptpath) + "/" + str(scriptname)
-			jobs.append("dump_run%d" % i)
-		   
+			jobs.append("chado-export-job%d" % i)
+
 			if self.run_jobs_flag == True:
 				print("starting job %d -- %s" % (i, scriptname))
 				self.run_bash(execline)
@@ -375,6 +372,4 @@ class ChadoGffExporter:
 if __name__ == '__main__':
 	exporter = ChadoGffExporter(sys.argv)
 	exporter.run()
-
-
 

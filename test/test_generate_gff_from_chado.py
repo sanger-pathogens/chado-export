@@ -158,8 +158,8 @@ class TestChadoGffExporter:
 			i = i + 1
 
 		assert i > 1
-		
-		
+
+
 	def test_09_get_organism_list_from_file1(self):
 	
 		# Given
@@ -179,7 +179,7 @@ class TestChadoGffExporter:
 			i = i + 1
 
 		assert i == 4
-		
+	
 	def test_10_get_organism_list_from_file2(self):
 	
 		# Given
@@ -199,7 +199,7 @@ class TestChadoGffExporter:
 			i = i + 1
 
 		assert i == 4
-	
+
 	@unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
 	def test_11_create_folder_structure(self):
 	
