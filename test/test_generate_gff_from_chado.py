@@ -3,6 +3,9 @@
 import os
 import unittest
 
+from nose import SkipTest
+
+
 from generate_gff_from_chado import * 
 from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_true
 
@@ -38,7 +41,11 @@ class TestChadoGffExporter:
 	def teardown(self):
 		self.chadoGffExporter = None
 
-
+	def checkAutoBuild():
+		if environ.get('TRAVIS_BUILD') and getenv('TRAVIS_BUILD') == 'yes':
+			raise SkipTest("Test skipped for automatic builds")
+			
+	
 	def test_01_read_program_arguments1(self):
     
 		# Given
@@ -138,9 +145,12 @@ class TestChadoGffExporter:
 		assert len(organisms) == 40
 
 	# Must skip on Travis as no database connection available
-	@unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
+	# @unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
 	def test_08_get_organism_list_all(self):
 	
+		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
+		checkAutoBuild()
+		
 		# Given
 		args = ['program_name', '-a', '-i', 'test/'+TestChadoGffExporter.INI_FILE]
     		
@@ -200,9 +210,12 @@ class TestChadoGffExporter:
 
 		assert i == 4
 
-	@unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
+	# @unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
 	def test_11_create_folder_structure(self):
 	
+		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
+		checkAutoBuild()
+			
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
@@ -219,9 +232,12 @@ class TestChadoGffExporter:
 		assert os.path.isdir(self.chadoGffExporter.targetpath + '/results')
 	
 	
-	@unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
+	# @unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
 	def test_12_execute_export(self):
 	
+		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
+		checkAutoBuild()
+			
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		

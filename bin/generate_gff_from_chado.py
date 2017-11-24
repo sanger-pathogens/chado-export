@@ -200,7 +200,7 @@ class ChadoGffExporter:
 			self.conn.autocommit = True
 
 		except Exception as err:
-			print "Unable to connect to the database: %s" % str(err)
+			print("Unable to connect to the database: %s" % str(err))
 			exit(1)
 
 
