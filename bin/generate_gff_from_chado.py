@@ -353,7 +353,7 @@ class ChadoGffExporter:
 
 			tf.write("touch " + self.statuspath + "/" + scriptname + ".done\n")
 			tf.close()
-			os.chmod(self.scriptpath + "/" + scriptname, 0775)
+			os.chmod(self.scriptpath + "/" + scriptname, 0o775)
 
 			#submit script to LSF
 			execline = "source /etc/bashrc; bsub -J chadoexport" + str(i) + " -q " + self.queue + " -n2  " + \
