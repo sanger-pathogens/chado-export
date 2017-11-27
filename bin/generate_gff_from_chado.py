@@ -185,6 +185,10 @@ class ChadoGffExporter:
 		self.configfile=args.configfile.strip()
 		self.dump_all=args.dump_all
 		self.org_list_file=args.org_list_file.strip()
+		
+		if len(self.configfile) > 0 and not os.path.isfile(self.configfile):
+			print('Configuration file not found!')
+			exit(1)
 	
 	
 	#
