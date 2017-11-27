@@ -18,58 +18,138 @@ class ChadoGffExporter:
 		self.prog_args = prog_args
 		self.run_jobs_flag = True
 		
-	@property
-	def configfile(self):
-		return self.configfile
-		
-	@property
-	def gtbin(self):
-		return self.gtbin
-		
-	@property
-	def writedbentrypath(self):
-		return self.writedbentrypath
-		
-	@property
-	def org_list_file(self):
-		return self.org_list_file
-		
-	@property
-	def slice_size(self):
-		return self.slice_size
-		
-	@property
-	def queue(self):
-		return self.queue
-		
-	@property
-	def targetpath(self):
-		return self.targetpath
+	# ------
 	
 	@property
-	def finalresultpath(self):
+	def configfile_property(self):
+		return self.configfile
+		
+	@configfile_property.setter
+	def configfile_property(self, value):
+		self.configfile = value
+	
+	# ------
+	
+	@property
+	def gtbin_property(self):
+		return self.gtbin
+		
+	@gtbin_property.setter
+	def gtbin_property(self, value):
+		self.gtbin = value
+
+	# ------
+	
+	@property
+	def writedbentrypath_property(self):
+		return self.writedbentrypath
+	
+	@writedbentrypath_property.setter
+	def writedbentrypath_property(self, value):
+		self.writedbentrypath = value
+
+	# ------
+	
+	@property
+	def org_list_file_property(self):
+		return self.org_list_file
+		
+	@org_list_file_property.setter
+	def org_list_file_property(self, value):
+		self.org_list_file = value
+
+	# ------
+	
+	@property
+	def slice_size_property(self):
+		return self.slice_size
+		
+	@slice_size_property.setter
+	def slice_size_property(self, value):
+		self.slice_size = value
+
+	# ------
+	
+	@property
+	def queue_property(self):
+		return self.queue
+
+	@queue_property.setter
+	def queue_property(self, value):
+		self.queue = value
+		
+	# ------
+	
+	@property
+	def targetpath_property(self):
+		return self.targetpath
+
+	@targetpath_property.setter
+	def targetpath_property(self, value):
+		self.targetpath = value
+		
+	# ------
+	
+	@property
+	def finalresultpath_property(self):
 		return self.finalresultpath
-		
+
+	@finalresultpath_property.setter
+	def finalresultpath_property(self, value):
+		self.finalresultpath = value
+
+	# ------
+	
 	@property
-	def scriptpath(self):
+	def scriptpath_property(self):
 		return self.scriptpath
+
+	@scriptpath_property.setter
+	def scriptpath_property(self, value):
+		self.scriptpath = value
 		
+	# ------
+	
 	@property
-	def logpath(self):
+	def logpath_property(self):
 		return self.logpath
-		
+
+	@logpath_property.setter
+	def logpath_property(self, value):
+		self.logpath = value
+
+	# ------
+	
 	@property
-	def statuspath(self):
+	def statuspath_property(self):
 		return self.statuspath
-		
+
+	@statuspath_property.setter
+	def statuspath_property(self, value):
+		self.statuspath = value
+
+	# ------
+	
 	@property
-	def resultbasepath(self):
+	def resultbasepath_property(self):
 		return self.resultbasepath
+
+	@resultbasepath_property.setter
+	def resultbasepath_property(self, value):
+		self.resultbasepath = value
 		
+	# ------
+	
 	@property
-	def dump_all(self):
+	def dump_all_property(self):
 		return self.dump_all
 		
+	@dump_all_property.setter
+	def dump_all_property(self, value):
+		self.dump_all = value
+
+	# ------
+	
 	@property
 	def run_jobs(self):
 		return self.run_jobs_flag

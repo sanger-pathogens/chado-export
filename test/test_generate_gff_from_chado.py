@@ -55,9 +55,9 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.read_program_arguments(args)
     		
 		# Then
-		assert self.chadoGffExporter.configfile == TestChadoGffExporter.DEFAULT_INI_FILE
-		assert self.chadoGffExporter.org_list_file == TestChadoGffExporter.DEFAULT_ORG_LIST_FILE
-		assert self.chadoGffExporter.dump_all == False
+		assert self.chadoGffExporter.configfile_property == TestChadoGffExporter.DEFAULT_INI_FILE
+		assert self.chadoGffExporter.org_list_file_property == TestChadoGffExporter.DEFAULT_ORG_LIST_FILE
+		assert self.chadoGffExporter.dump_all_property == False
 		
 		
 	def test_02_read_program_arguments2(self):
@@ -69,7 +69,7 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.read_program_arguments(args)
     		
 		# Then
-		assert self.chadoGffExporter.dump_all == True
+		assert self.chadoGffExporter.dump_all_property == True
 		
 	def test_03_read_program_arguments3(self):
 		
@@ -80,7 +80,7 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.read_program_arguments(args)
     		
 		# Then
-		assert self.chadoGffExporter.configfile == '/somedirectory/config.ini'
+		assert self.chadoGffExporter.configfile_property == '/somedirectory/config.ini'
 		
 	def test_04_read_program_arguments4(self):
 		
@@ -91,7 +91,7 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.read_program_arguments(args)
     		
 		# Then
-		assert self.chadoGffExporter.org_list_file == '/somedirectory/organism.list'
+		assert self.chadoGffExporter.org_list_file_property == '/somedirectory/organism.list'
 		
 	def test_05_read_program_arguments5(self):
 	
@@ -102,9 +102,9 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.read_program_arguments(args)
     		
 		# Then
-		assert self.chadoGffExporter.configfile == '/somedirectory/config.ini'
-		assert self.chadoGffExporter.dump_all == True
-		assert self.chadoGffExporter.org_list_file == '/somedirectory/organism.list'
+		assert self.chadoGffExporter.configfile_property == '/somedirectory/config.ini'
+		assert self.chadoGffExporter.dump_all_property == True
+		assert self.chadoGffExporter.org_list_file_property == '/somedirectory/organism.list'
 	
 	
 	def test_06_read_configuration(self):
@@ -115,20 +115,20 @@ class TestChadoGffExporter:
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		
-		print('config file: '+self.chadoGffExporter.configfile)
+		print('config file: '+self.chadoGffExporter.configfile_property)
 		self.chadoGffExporter.read_configuration()
 		self.chadoGffExporter.display_configuration()
     		
 		# Then
-		assert self.chadoGffExporter.gtbin == '/software/pathogen/external/apps/usr/local/genometools-1.5.9/bin/gt'
-		assert self.chadoGffExporter.writedbentrypath == '/software/pathogen/projects/artemis/current/etc/writedb_entry'
-		assert self.chadoGffExporter.slice_size == 10
-		assert self.chadoGffExporter.queue == 'basement'
-		assert self.chadoGffExporter.targetpath == '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
-		assert self.chadoGffExporter.finalresultpath == self.chadoGffExporter.targetpath + '/results'
-		assert self.chadoGffExporter.scriptpath == self.chadoGffExporter.targetpath + '/scripts'
-		assert self.chadoGffExporter.logpath == self.chadoGffExporter.targetpath + '/logs'
-		assert self.chadoGffExporter.statuspath == self.chadoGffExporter.targetpath + '/status'
+		assert self.chadoGffExporter.gtbin_property == '/software/pathogen/external/apps/usr/local/genometools-1.5.9/bin/gt'
+		assert self.chadoGffExporter.writedbentrypath_property == '/software/pathogen/projects/artemis/current/etc/writedb_entry'
+		assert self.chadoGffExporter.slice_size_property == 10
+		assert self.chadoGffExporter.queue_property == 'basement'
+		assert self.chadoGffExporter.targetpath_property == '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
+		assert self.chadoGffExporter.finalresultpath_property == self.chadoGffExporter.targetpath_property + '/results'
+		assert self.chadoGffExporter.scriptpath_property == self.chadoGffExporter.targetpath_property + '/scripts'
+		assert self.chadoGffExporter.logpath_property == self.chadoGffExporter.targetpath_property + '/logs'
+		assert self.chadoGffExporter.statuspath_property == self.chadoGffExporter.targetpath_property + '/status'
 	
 	
 	def test_07_read_organism_list_from_file(self):
@@ -225,11 +225,11 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.create_folder_structure()
 		
 		# Then
-		assert os.path.isdir(self.chadoGffExporter.targetpath + '/results')
-		assert os.path.isdir(self.chadoGffExporter.targetpath + '/scripts')
-		assert os.path.isdir(self.chadoGffExporter.targetpath + '/logs')
-		assert os.path.isdir(self.chadoGffExporter.targetpath + '/status')
-		assert os.path.isdir(self.chadoGffExporter.targetpath + '/results')
+		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/results')
+		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/scripts')
+		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/logs')
+		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/status')
+		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/results')
 	
 	
 	# @unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
@@ -252,7 +252,7 @@ class TestChadoGffExporter:
 		
 		# Then
 		# We should now have four generated files [scripts] based on the current test organism list file
-		list = os.listdir(self.chadoGffExporter.scriptpath) # dir is your directory path
+		list = os.listdir(self.chadoGffExporter.scriptpath_property) # dir is your directory path
 		num_scripts = len(list)
 		assert num_scripts == 4
 	
