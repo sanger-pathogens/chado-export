@@ -3,7 +3,7 @@ addons:
   apt:
     packages:
 python:
-  - "3.4"
+  - "3.6.0"
 sudo: false
 install:
   - "source ./install_dependencies.sh"
