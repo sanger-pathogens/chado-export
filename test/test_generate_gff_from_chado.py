@@ -240,13 +240,16 @@ class TestChadoGffExporter:
 			
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
+		
+		# Don't actually run the export..
+		self.chadoGffExporter.run_jobs = False
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 		self.chadoGffExporter.create_folder_structure()
-		# Don't actually run the export..
-		self.chadoGffExporter.run_jobs = False
+		
+		assert self.chadoGffExporter.run_jobs == False
 		
 		self.chadoGffExporter.execute_export()
 		

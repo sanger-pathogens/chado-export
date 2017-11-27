@@ -352,7 +352,7 @@ class ChadoGffExporter:
 				cur.close()
 				self.close_database_connection()
 				
-			for sl in map(None, *(iter(rows),) * size):
+			for sl in zip(*(iter(rows),) * size):
 				res = []
 				for elem in sl:
 					if elem is None:
