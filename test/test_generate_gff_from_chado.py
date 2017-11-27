@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import unittest
@@ -41,8 +41,8 @@ class TestChadoGffExporter:
 	def teardown(self):
 		self.chadoGffExporter = None
 
-	def checkAutoBuild():
-		if environ.get('TRAVIS_BUILD') and getenv('TRAVIS_BUILD') == 'yes':
+	def checkAutoBuild(self):
+		if os.environ.get('TRAVIS_BUILD') and os.getenv('TRAVIS_BUILD') == 'yes':
 			raise SkipTest("Test skipped for automatic builds")
 			
 	
@@ -149,7 +149,7 @@ class TestChadoGffExporter:
 	def test_08_get_organism_list_all(self):
 	
 		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
-		checkAutoBuild()
+		self.checkAutoBuild()
 		
 		# Given
 		args = ['program_name', '-a', '-i', 'test/'+TestChadoGffExporter.INI_FILE]
@@ -214,7 +214,7 @@ class TestChadoGffExporter:
 	def test_11_create_folder_structure(self):
 	
 		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
-		checkAutoBuild()
+		self.checkAutoBuild()
 			
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
@@ -236,7 +236,7 @@ class TestChadoGffExporter:
 	def test_12_execute_export(self):
 	
 		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
-		checkAutoBuild()
+		self.checkAutoBuild()
 			
 		# Given
 		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]

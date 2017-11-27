@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import sys
 import psycopg2
 import os
 import subprocess
-import ConfigParser
+import configparser
 import argparse
 
 #
@@ -112,7 +112,7 @@ class ChadoGffExporter:
 	#
 	def read_configuration(self):
 	
-		config = ConfigParser.ConfigParser()
+		config = configparser.ConfigParser()
 		self.config = config
 		
 		config.read(self.configfile)
@@ -365,7 +365,7 @@ class ChadoGffExporter:
 
 			if self.run_jobs_flag == True:
 				print("starting job %d -- %s" % (i, scriptname))
-				self.run_bash(execline)
+				#self.run_bash(execline)
 
 # ================= Run it =====================================
 
