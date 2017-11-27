@@ -362,7 +362,7 @@ class ChadoGffExporter:
 
 		else:
 			rows = self.read_organism_list_from_file()
-			for i in xrange(0, len(rows), size):
+			for i in range(0, len(rows), size):
 				yield rows[i:i + size]
 	
 
