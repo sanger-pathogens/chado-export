@@ -445,7 +445,7 @@ class ChadoGffExporter:
 
 			if self.run_jobs_flag == True:
 				print("starting job %d -- %s" % (i, scriptname))
-				#self.run_bash(execline)
+				self.run_bash(execline)
 
 # ================= Run it =====================================
 

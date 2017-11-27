@@ -185,7 +185,7 @@ class TestChadoGffExporter:
 		
 			print("organism: %s" % (org))
 			
-			assert cmp(TestChadoGffExporter.ORG_FILE1_CHUNKS[i], org) == 0
+			assert TestChadoGffExporter.ORG_FILE1_CHUNKS[i] == org
 			i = i + 1
 
 		assert i == 4
@@ -205,7 +205,7 @@ class TestChadoGffExporter:
 		
 			print("organism: %s" % (org))
 			
-			assert cmp(TestChadoGffExporter.ORG_FILE2_CHUNKS[i], org) == 0
+			assert TestChadoGffExporter.ORG_FILE2_CHUNKS[i] == org
 			i = i + 1
 
 		assert i == 4
