@@ -168,6 +168,7 @@ class ChadoGffExporter:
 		self.read_program_arguments(self.prog_args)
 		self.validate_arguments()
 		self.read_configuration()
+		self.validate_config()
 		#self.display_configuration()
 		self.create_folder_structure()
 		self.execute_export()
@@ -194,9 +195,14 @@ class ChadoGffExporter:
 	#
 	def validate_arguments(self):
 	
-		if len(self.configfile) == 0 or (len(self.configfile) > 0 and not os.path.isfile(self.configfile)):
+		if len(self.configfile) == 0 or not os.path.isfile(self.configfile):
 			print('Configuration file not found: %s' % (self.configfile))
 			exit(1)
+			
+		if self.dump_all == False:
+			if len(self.org_list_file) == 0 or not os.path.isfile(self.org_list_file):
+				print('Organism file not found: %s' % (self.org_list_file))
+				exit(1)
 			
 	#
 	# Read configuration from config file.
@@ -226,6 +232,28 @@ class ChadoGffExporter:
 		self.resultbasepath = self.targetpath + "/artemis/GFF"
 		
 		
+	#
+	# Validate the program ini file configuration
+	#
+	def validate_config(self):
+	
+		valid = True
+		
+		if len(self.targetpath) == 0 or not os.path.isdir(self.targetpath):
+			print('Configuration file target_path property does not point to a valid directory: %s' % (self.targetpath))
+			valid = False
+			
+		if len(self.gtbin) == 0 or not os.path.isfile(self.gtbin):
+			print('Configuration file genome_tools_bin property is not valid: %s' % (self.gtbin))
+			valid = False
+			
+		if len(self.writedbentrypath) == 0 or not os.path.isfile(self.writedbentrypath):
+			print('Configuration file write_db_entry_path property is not valid: %s' % (self.writedbentrypath))
+			valid = False
+
+		if valid == False:
+			exit(1)
+				
 	#
 	# Print out the configuration
 	#

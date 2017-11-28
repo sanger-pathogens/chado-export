@@ -116,7 +116,6 @@ class TestChadoGffExporter:
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
-		self.chadoGffExporter.validate_arguments()
 		self.chadoGffExporter.read_configuration()
 		self.chadoGffExporter.display_configuration()
     		
