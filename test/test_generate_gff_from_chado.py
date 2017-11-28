@@ -18,9 +18,9 @@ from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_tru
 #
 class TestChadoGffExporter:
 
-	DEFAULT_INI_FILE = 'generate_gff_from_chado.ini'
+	DEFAULT_INI_FILE = os.path.join(sys.path[0]+'/generate_gff_from_chado.ini')
 	DEFAULT_ORG_LIST_FILE = 'generate_gff_from_chado.orglist'
-	INI_FILE = 'test_generate_gff_from_chado.ini'
+	INI_FILE = os.path.join(sys.path[0]+'/test_generate_gff_from_chado.ini')
 	ORGLIST_FILE1= 'test_generate_gff_from_chado.orglist1'
 	ORGLIST_FILE2= 'test_generate_gff_from_chado.orglist2'
 	
@@ -110,12 +110,11 @@ class TestChadoGffExporter:
 	def test_06_read_configuration(self):
     
 		# Given
-		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE]
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
-		
-		print('config file: '+self.chadoGffExporter.configfile_property)
+		self.chadoGffExporter.validate_arguments()
 		self.chadoGffExporter.read_configuration()
 		self.chadoGffExporter.display_configuration()
     		
@@ -134,7 +133,7 @@ class TestChadoGffExporter:
 	def test_07_read_organism_list_from_file(self):
 	
 		# Given
-		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -152,7 +151,7 @@ class TestChadoGffExporter:
 		self.checkAutoBuild()
 		
 		# Given
-		args = ['program_name', '-a', '-i', 'test/'+TestChadoGffExporter.INI_FILE]
+		args = ['program_name', '-a', '-i', TestChadoGffExporter.INI_FILE]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -173,7 +172,7 @@ class TestChadoGffExporter:
 	def test_09_get_organism_list_from_file1(self):
 	
 		# Given
-		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -193,7 +192,7 @@ class TestChadoGffExporter:
 	def test_10_get_organism_list_from_file2(self):
 	
 		# Given
-		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE2]
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE2]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -217,7 +216,7 @@ class TestChadoGffExporter:
 		self.checkAutoBuild()
 			
 		# Given
-		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -239,7 +238,7 @@ class TestChadoGffExporter:
 		self.checkAutoBuild()
 			
 		# Given
-		args = ['program_name', '-i', 'test/'+TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
 		
 		# Don't actually run the export..
 		self.chadoGffExporter.run_jobs = False

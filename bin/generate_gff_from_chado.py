@@ -165,6 +165,7 @@ class ChadoGffExporter:
 	def run(self):
 	
 		self.read_program_arguments(self.prog_args)
+		self.validate_arguments()
 		self.read_configuration()
 		#self.display_configuration()
 		self.create_folder_structure()
@@ -177,7 +178,7 @@ class ChadoGffExporter:
 	def read_program_arguments(self, prog_args):
 
 		parser = argparse.ArgumentParser(prog=prog_args[0], description='Script to export Chado database organism data to GFF files.')
-		parser.add_argument('-i', help='Path of script configuration file', required=False, dest='configfile', default='generate_gff_from_chado.ini')
+		parser.add_argument('-i', help='Path of script configuration file', required=False, dest='configfile', default=os.path.join(sys.path[0]+'/generate_gff_from_chado.ini'))
 		parser.add_argument('-a', help='Export all public Chado organisms to GFF', required=False, action='store_true', dest='dump_all')
 		parser.add_argument('-f', help='A file containing a custom list of organisms to export from Chado', required=False, dest='org_list_file', default='generate_gff_from_chado.orglist')
 		
@@ -185,12 +186,17 @@ class ChadoGffExporter:
 		self.configfile=args.configfile.strip()
 		self.dump_all=args.dump_all
 		self.org_list_file=args.org_list_file.strip()
-		
-		if len(self.configfile) > 0 and not os.path.isfile(self.configfile):
-			print('Configuration file not found!')
+
+	
+	#
+	# Validate the program arguments
+	#
+	def validate_arguments(self):
+	
+		if len(self.configfile) == 0 or (len(self.configfile) > 0 and not os.path.isfile(self.configfile)):
+			print('Configuration file not found: %s' % (self.configfile))
 			exit(1)
-	
-	
+			
 	#
 	# Read configuration from config file.
 	#
