@@ -14,7 +14,7 @@ setup(
     author='Sascha Steinbiss, Kevin Pepper',
     author_email='path-help@sanger.ac.uk',
     url='https://github.com/sanger-pathogens/chado-export',
-    scripts=glob.glob('bin/*'),
+    scripts=glob.glob('bin/*.py'),
     test_suite='nose.collector',
     tests_require=['nose >= 1.3'],
     install_requires=[],
