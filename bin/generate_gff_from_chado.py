@@ -6,6 +6,7 @@ import os
 import subprocess
 import configparser
 import argparse
+import pkg_resources
 
 #
 # Export Chado organism sequence data to GFF file.
@@ -178,7 +179,7 @@ class ChadoGffExporter:
 	def read_program_arguments(self, prog_args):
 
 		parser = argparse.ArgumentParser(prog=prog_args[0], description='Script to export Chado database organism data to GFF files.')
-		parser.add_argument('-i', help='Path of script configuration file', required=False, dest='configfile', default=os.path.join(sys.path[0]+'/generate_gff_from_chado.ini'))
+		parser.add_argument('-i', help='Path of script configuration file', required=False, dest='configfile', default=pkg_resources.resource_filename(__name__, 'generate_gff_from_chado.ini'))
 		parser.add_argument('-a', help='Export all public Chado organisms to GFF', required=False, action='store_true', dest='dump_all')
 		parser.add_argument('-f', help='A file containing a custom list of organisms to export from Chado', required=False, dest='org_list_file', default='generate_gff_from_chado.orglist')
 		

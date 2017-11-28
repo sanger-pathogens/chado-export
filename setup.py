@@ -10,6 +10,7 @@ setup(
     version='1.0.0',
     description='generate_gff_from_chado.py: a script to export organism genome data in Chado, to GFF files.',
     package_dir={'': 'bin'},
+	package_data={'chado-export': ['bin/*.ini']},
     author='Sascha Steinbiss, Kevin Pepper',
     author_email='path-help@sanger.ac.uk',
     url='https://github.com/sanger-pathogens/chado-export',
