@@ -15,6 +15,7 @@ setup(
     author_email='path-help@sanger.ac.uk',
     url='https://github.com/sanger-pathogens/chado-export',
     scripts=glob.glob('bin/*.py'),
+    data_files=[('',['bin/*.ini'])],
     test_suite='nose.collector',
     tests_require=['nose >= 1.3'],
     install_requires=[],
