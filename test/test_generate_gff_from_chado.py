@@ -20,7 +20,6 @@ from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_tru
 #
 class TestChadoGffExporter:
 
-	DEFAULT_INI_FILE = '/generate_gff_from_chado.ini'
 	DEFAULT_ORG_LIST_FILE = 'generate_gff_from_chado.orglist'
 	INI_FILE = os.path.join(sys.path[0]+'/test_generate_gff_from_chado.ini')
 	ORGLIST_FILE1= 'test_generate_gff_from_chado.orglist1'
@@ -51,13 +50,13 @@ class TestChadoGffExporter:
 	def test_01_read_program_arguments1(self):
     
 		# Given
-		args = ['program_name']
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
     		
 		# Then
-		assert self.chadoGffExporter.configfile_property.endswith(TestChadoGffExporter.DEFAULT_INI_FILE)
+		assert self.chadoGffExporter.configfile_property.endswith(TestChadoGffExporter.INI_FILE)
 		assert self.chadoGffExporter.org_list_file_property == TestChadoGffExporter.DEFAULT_ORG_LIST_FILE
 		assert self.chadoGffExporter.dump_all_property == False
 		
@@ -65,7 +64,7 @@ class TestChadoGffExporter:
 	def test_02_read_program_arguments2(self):
 		
 		# Given
-		args = ['program_name', '-a']
+		args = ['program_name', '-a', '-i', TestChadoGffExporter.INI_FILE]
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
@@ -87,7 +86,7 @@ class TestChadoGffExporter:
 	def test_04_read_program_arguments4(self):
 		
 		# Given
-		args = ['program_name', '-f', '/somedirectory/organism.list']
+		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', '/somedirectory/organism.list']
     		
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
