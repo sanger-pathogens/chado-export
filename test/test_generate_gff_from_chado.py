@@ -4,9 +4,9 @@ import sys
 import os
 import pkg_resources
 import unittest
+import io
 
 from nose import SkipTest
-
 
 from generate_gff_from_chado import * 
 from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_true
@@ -21,9 +21,11 @@ from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_tru
 class TestChadoGffExporter:
 
 	DEFAULT_ORG_LIST_FILE = 'generate_gff_from_chado.orglist'
-	INI_FILE = os.path.join(sys.path[0]+'/test_generate_gff_from_chado.ini')
-	ORGLIST_FILE1= 'test_generate_gff_from_chado.orglist1'
-	ORGLIST_FILE2= 'test_generate_gff_from_chado.orglist2'
+	INI_FILE = os.path.join(sys.path[0]+'/resources/test_generate_gff_from_chado.ini')
+	APOLLO_INI_FILE = os.path.join(sys.path[0]+'/resources/test_generate_gff_from_chado-apollo.ini')
+	ORGLIST_FILE1= 'resources/test_generate_gff_from_chado.orglist1'
+	ORGLIST_FILE2= 'resources/test_generate_gff_from_chado.orglist2'
+	BASE_DIR = "/tmp/chado-export"
 	
 	ORG_FILE1_CHUNKS = [['Bsaltans', 'Bxylophilus', 'Eacervulina', 'Ebrunetti', 'Egranulosus', 'Emaxima', 'Emitis', 'Emultilocularis', 'Enecatrix', 'Epraecox'], \
 						['Etenella', 'Gpallida', 'Hmicrostoma', 'Lbraziliensis', 'Ldonovani_BPK282A1', 'Linfantum', 'Lmajor', 'Lmexicana', 'Ncaninum', 'Pberghei'], \
@@ -56,6 +58,7 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.read_program_arguments(args)
     		
 		# Then
+		assert self.chadoGffExporter.apolloexport_property == False
 		assert self.chadoGffExporter.configfile_property.endswith(TestChadoGffExporter.INI_FILE)
 		assert self.chadoGffExporter.org_list_file_property == TestChadoGffExporter.DEFAULT_ORG_LIST_FILE
 		assert self.chadoGffExporter.dump_all_property == False
@@ -123,13 +126,19 @@ class TestChadoGffExporter:
 		assert self.chadoGffExporter.writedbentrypath_property == '/software/pathogen/projects/artemis/current/etc/writedb_entry'
 		assert self.chadoGffExporter.slice_size_property == 10
 		assert self.chadoGffExporter.queue_property == 'basement'
-		assert self.chadoGffExporter.targetpath_property == '/lustre/scratch118/infgen/pathdev/kp11/chado-gff'
+		assert self.chadoGffExporter.jobtitle_property == "chadoexp"
+		assert self.chadoGffExporter.targetpath_property == TestChadoGffExporter.BASE_DIR
 		assert self.chadoGffExporter.finalresultpath_property == self.chadoGffExporter.targetpath_property + '/results'
 		assert self.chadoGffExporter.scriptpath_property == self.chadoGffExporter.targetpath_property + '/scripts'
 		assert self.chadoGffExporter.logpath_property == self.chadoGffExporter.targetpath_property + '/logs'
 		assert self.chadoGffExporter.statuspath_property == self.chadoGffExporter.targetpath_property + '/status'
 	
-	
+		assert self.chadoGffExporter.apolloexport_property == False
+		assert len(self.chadoGffExporter.apolloconverterapp_property) == 0
+		assert len(self.chadoGffExporter.apolloconverterappargs_property) == 0
+		assert len(self.chadoGffExporter.ftpsitefolder_property) == 0
+		assert len(self.chadoGffExporter.reportemailaddress_property) == 0
+
 	def test_07_read_organism_list_from_file(self):
 	
 		# Given
@@ -210,7 +219,7 @@ class TestChadoGffExporter:
 		assert i == 4
 
 	# @unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
-	def test_11_create_folder_structure(self):
+	def test_11a_create_folder_structure(self):
 	
 		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
 		self.checkAutoBuild()
@@ -221,6 +230,7 @@ class TestChadoGffExporter:
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
+		os.makedirs(self.chadoGffExporter.targetpath_property, exist_ok=True)
 		self.chadoGffExporter.create_folder_structure()
 		
 		# Then
@@ -229,6 +239,29 @@ class TestChadoGffExporter:
 		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/logs')
 		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/status')
 		assert os.path.isdir(self.chadoGffExporter.targetpath_property + '/results')
+		assert self.chadoGffExporter.apolloexport_property == False
+		
+	# @unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
+	def test_11b_create_folder_structure_apolloexport(self):
+	
+		# Hack as there's no decent annotation mechanism in nose to conditionally skip tests...
+		self.checkAutoBuild()
+			
+		# Given
+		args = ['program_name', '-i', TestChadoGffExporter.APOLLO_INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
+    		
+		# When
+		self.chadoGffExporter.read_program_arguments(args)
+		self.chadoGffExporter.read_configuration()
+		os.makedirs(self.chadoGffExporter.targetpath_property, exist_ok=True)
+		#self.chadoGffExporter.validate_config()
+		self.chadoGffExporter.display_configuration()
+		self.chadoGffExporter.create_folder_structure()
+		
+		# Then
+		assert self.chadoGffExporter.apolloexport_property == True
+		assert os.path.isdir(self.chadoGffExporter.apollogffpath_property)
+		assert os.path.isdir("/tmp/ftpsite")
 	
 	
 	# @unittest.skipIf("TRAVIS_BUILD" in os.environ and os.environ["TRAVIS_BUILD"] == "yes", "Skipping this test on Travis CI.")
@@ -257,6 +290,69 @@ class TestChadoGffExporter:
 		list = os.listdir(self.chadoGffExporter.scriptpath_property) # dir is your directory path
 		num_scripts = len(list)
 		assert num_scripts == 4
+
+	def test_13_writeCheckerScript(self):
 	
+		# Given
+		jobs = [ "jobscript1", "jobscript2", "jobscript3" ]
+		logs = [ "/tmp/jobscript1.e", "/tmp/jobscript2.e", "/tmp/jobscript3.e" ]
+		self.chadoGffExporter.reportemailaddress_property = 'person@address.com'
 		
+		expected_output = "#!/bin/bash\n" + \
+						"MAILMSG=\n" + \
+						"if [[ ! -f jobscript1 ]]; then MAILMSG=${MAILMSG}'ERROR: Cannot find Chado export job completion file: jobscript1\\n'; fi\n" + \
+						"if [[ ! -f jobscript2 ]]; then MAILMSG=${MAILMSG}'ERROR: Cannot find Chado export job completion file: jobscript2\\n'; fi\n" + \
+						"if [[ ! -f jobscript3 ]]; then MAILMSG=${MAILMSG}'ERROR: Cannot find Chado export job completion file: jobscript3\\n'; fi\n" + \
+						"if [[ -s /tmp/jobscript1.e ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: /tmp/jobscript1.e\\n'; fi\n" + \
+						"if [[ -s /tmp/jobscript2.e ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: /tmp/jobscript2.e\\n'; fi\n" + \
+						"if [[ -s /tmp/jobscript3.e ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: /tmp/jobscript3.e\\n'; fi\n" + \
+						"if [[ \"$MAILMSG\" == \"\" ]]; then echo \"Organism data has been exported to gff files.\" | mailx -s 'Chado export job completed successfully' person@address.com; fi\n" + \
+						"if [[ \"$MAILMSG\" != \"\" ]]; then echo -e $MAILMSG | mailx -s 'Chado export job has errors - investigation required' " + self.chadoGffExporter.reportemailaddress_property + "; fi\n"
 		
+		stream = io.StringIO()
+		
+		# When
+		self.chadoGffExporter.write_checker_job_script(stream, jobs, logs)
+		contents = stream.getvalue()
+		stream.close()
+		
+		test_assertion = "Assertion failed: \n" + expected_output + "\n\n" + contents
+		
+		# Then
+		assert contents == expected_output, test_assertion
+		
+	def test_14_construct_checker_job_invoker_cmd(self):
+	
+		# Given
+		self.chadoGffExporter.queue_property = "fastqueue"
+		self.chadoGffExporter.logpath_property = "/tmp/alogpath"
+		
+		expected_output1 = "source /etc/bashrc; bsub -J checker-job -q fastqueue -R 'select[mem>3500] rusage[mem=3500] span[hosts=1]' " + \
+						"-M 3500 -o /tmp/alogpath/checker-job.o -e /tmp/alogpath/checker-job.e -w 'ended(chadoexp*)' /tmp/checker_script.sh"
+		
+		# When
+		cmd1 = self.chadoGffExporter.construct_checker_job_invoker_cmd("/tmp/checker_script.sh", "checker-job")
+		
+		# Then
+		assert cmd1 == expected_output1	
+	
+	def test_15_read_configuration_with_apollo_export(self):
+    
+		# Given
+		args = ['program_name', '-i', TestChadoGffExporter.APOLLO_INI_FILE]
+		self.chadoGffExporter.read_program_arguments(args)
+		self.chadoGffExporter.read_configuration()
+    		
+		# When - set properties programmatically
+		
+    		
+		# Then
+		assert self.chadoGffExporter.apolloexport_property == True
+		assert self.chadoGffExporter.apolloconverterapp_property == "script.sh"
+		assert self.chadoGffExporter.apolloconverterappargs_property == "-e"
+		assert self.chadoGffExporter.copytoftpsiteflag_property == True
+		assert self.chadoGffExporter.ftpsitefolder_property == "/tmp/ftpsite"
+		assert self.chadoGffExporter.reportemailaddress_property == "person@address.com"	
+		assert self.chadoGffExporter.apollogffpath_property == self.chadoGffExporter.targetpath_property + "/apollo_files"
+		assert self.chadoGffExporter.jobtitle_property == "apollojob"
+
