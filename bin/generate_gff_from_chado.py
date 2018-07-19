@@ -6,7 +6,10 @@ import os
 import subprocess
 import configparser
 import argparse
+import time
+import re
 import pkg_resources
+
 
 #
 # Export Chado organism sequence data to GFF file.
@@ -18,6 +21,27 @@ class ChadoGffExporter:
 	def __init__(self, prog_args):
 		self.prog_args = prog_args
 		self.run_jobs_flag = True
+		
+		self.jobtitle="chadoexp"
+		
+		self.apolloexport = False
+		
+		self.apolloconverterapp = ''
+		self.copytoftpsiteflag = True
+		self.ftpsitefolder = ''
+		self.reportemailaddress = ''
+		self.apolloconverterappargs = ''
+		self.apollogffpath = ''
+		
+	# ------
+	
+	@property
+	def jobtitle_property(self):
+		return self.jobtitle
+		
+	@jobtitle_property.setter
+	def jobtitle_property(self, value):
+		self.jobtitle = value
 		
 	# ------
 	
@@ -138,7 +162,77 @@ class ChadoGffExporter:
 	@resultbasepath_property.setter
 	def resultbasepath_property(self, value):
 		self.resultbasepath = value
+	
+	# ------
+	
+	@property
+	def apolloconverterapp_property(self):
+		return self.apolloconverterapp
+
+	@apolloconverterapp_property.setter
+	def apolloconverterapp_property(self, value):
+		self.apolloconverterapp = value
+	
+	# ------
+	
+	@property
+	def apolloconverterappargs_property(self):
+		return self.apolloconverterappargs
+
+	@apolloconverterappargs_property.setter
+	def apolloconverterappargs_property(self, value):
+		self.apolloconverterappargs = value
+
+	# ------
+	
+	@property
+	def copytoftpsiteflag_property(self):
+		return self.copytoftpsiteflag
+
+	@copytoftpsiteflag_property.setter
+	def copytoftpsiteflag_property(self, value):
+		self.copytoftpsiteflag = value
 		
+	# ------
+	
+	@property
+	def ftpsitefolder_property(self):
+		return self.ftpsitefolder
+
+	@ftpsitefolder_property.setter
+	def ftpsitefolder_property(self, value):
+		self.ftpsitefolder = value
+
+	# ------
+	
+	@property
+	def reportemailaddress_property(self):
+		return self.reportemailaddress
+
+	@reportemailaddress_property.setter
+	def reportemailaddress_property(self, value):
+		self.reportemailaddress = value	
+
+	# ------
+	
+	@property
+	def apollogffpath_property(self):
+		return self.apollogffpath
+
+	@apollogffpath_property.setter
+	def apollogffpath_property(self, value):
+		self.apollogffpath = value
+		
+	# ------
+	
+	@property
+	def apolloexport_property(self):
+		return self.apolloexport
+
+	@apolloexport_property.setter
+	def apolloexport_property(self, value):
+		self.apolloexport = value
+
 	# ------
 	
 	@property
@@ -212,24 +306,38 @@ class ChadoGffExporter:
 		config = configparser.ConfigParser()
 		self.config = config
 		
-		config.read(self.configfile)
+		try:
+			config.read(self.configfile)
+			
+			self.gtbin = config.get('General', 'genome_tools_bin')
+			self.writedbentrypath = config.get('General', 'write_db_entry_path')
+			
+			# number of genomes per chunk
+			self.slice_size = int(config.get('Job', 'slice_size'))
+			
+			# target queue
+			self.queue = config.get('Job', 'queue')
+			
+			# working directory
+			self.targetpath = config.get('General', 'target_path').strip()
+			self.finalresultpath = self.targetpath + "/results"
+			self.scriptpath = self.targetpath + "/scripts"
+			self.logpath = self.targetpath + "/logs"
+			self.statuspath = self.targetpath + "/status"
+			self.resultbasepath = self.targetpath + "/artemis/GFF"
 		
-		self.gtbin = config.get('General', 'genome_tools_bin')
-		self.writedbentrypath = config.get('General', 'write_db_entry_path')
-		
-		# number of genomes per chunk
-		self.slice_size = int(config.get('Job', 'slice_size'))
-		
-		# target queue
-		self.queue = config.get('Job', 'queue')
-		
-		# working directory
-		self.targetpath = config.get('General', 'target_path').strip()
-		self.finalresultpath = self.targetpath + "/results"
-		self.scriptpath = self.targetpath + "/scripts"
-		self.logpath = self.targetpath + "/logs"
-		self.statuspath = self.targetpath + "/status"
-		self.resultbasepath = self.targetpath + "/artemis/GFF"
+		except (configparser.NoSectionError, configparser.MissingSectionHeaderError) as e:
+			print('Properties file is missing mandatory sections: %s' % str(e))
+			exit(1)
+			
+		try:
+			self.jobtitle = config.get('Job', 'name')
+		except Exception as err:
+			# Fall back to default name
+			pass
+				
+		# Read any properties related to Apollo export
+		self.read_apollo_export_configuration(config)
 		
 		
 	#
@@ -239,7 +347,7 @@ class ChadoGffExporter:
 	
 		valid = True
 		
-		if len(self.targetpath) == 0 or not os.path.isdir(self.targetpath):
+		if len(self.targetpath) <= 1 or (not os.path.isdir(self.targetpath)):
 			print('Configuration file target_path property does not point to a valid directory: %s' % (self.targetpath))
 			valid = False
 			
@@ -250,6 +358,19 @@ class ChadoGffExporter:
 		if len(self.writedbentrypath) == 0 or not os.path.isfile(self.writedbentrypath):
 			print('Configuration file write_db_entry_path property is not valid: %s' % (self.writedbentrypath))
 			valid = False
+			
+		if self.apolloexport == True:
+			if len(self.apolloconverterapp) == 0 or not os.path.isfile(self.apolloconverterapp):
+				print('Configuration file apollo_gff_converter_app_path property is not valid: %s' % (self.apolloconverterapp))
+				valid = False
+				
+			if self.copytoftpsiteflag == True and (len(self.ftpsitefolder) == 0 or not os.path.isdir(self.ftpsitefolder)):
+				print('Configuration file ftp_site_folder property does not point to a valid directory: %s' % (self.ftpsitefolder))
+				valid = False
+				
+			if not re.match("[^@]+@[^@]+\.[^@]+", self.reportemailaddress):
+				print('Configuration file report_email_address property is not a valid email address: %s' % (self.reportemailaddress))
+				valid = False
 
 		if valid == False:
 			exit(1)
@@ -276,7 +397,12 @@ class ChadoGffExporter:
 		print("host property: %s" % (self.config.get('Connection', 'host')))
 		print("password property: %s" % (self.config.get('Connection', 'password')))
 		print("port property: %s" % (self.config.get('Connection', 'port')))
-	
+		print("Apollo export flag: %s" % (self.apolloexport))
+		print("apolloconverterapp property: %s" % (self.apolloconverterapp))
+		print("apolloconverterappargs property: %s" % (self.apolloconverterappargs))
+		print("apollogffpath property: %s" % (self.apollogffpath))
+		print("copytoftpsiteflag property: %s" % (self.copytoftpsiteflag))
+		print("ftpsitefolder property: %s" % (self.ftpsitefolder))
 	
 	#
 	# Read a bespoke list of organisms to export, from file.
@@ -346,12 +472,12 @@ class ChadoGffExporter:
 
 		if not os.path.isdir(self.targetpath):
 			raise Exception('The target GFF file directory ' + self.targetpath + ' does not exist. Please create it or change it in the configuration file, and then re-run.')
-			
+	
 		# make dirs if required
 		for dir in [self.statuspath, self.logpath, self.scriptpath, self.finalresultpath]:
 			if not os.path.isdir(dir):
 				os.makedirs(dir)
-		
+
 		# clean up old status files
 		for root, dirs, files in os.walk(self.statuspath, topdown=False):
 			for name in files:
@@ -360,11 +486,35 @@ class ChadoGffExporter:
 		for root, dirs, files in os.walk(self.scriptpath, topdown=False):
 			for name in files:
 				os.unlink(os.path.join(root, name))
+		# clean up old log files
 		for root, dirs, files in os.walk(self.logpath, topdown=False):
 			for name in files:
 				os.unlink(os.path.join(root, name))
 
+		# Make any Apollo export related directories if required
+		# and ensure we clear out any old files.
+		if self.apolloexport == True:
+		
+			self.create_apollo_export_folders()
 
+			# Clear out any old files
+			for root, dirs, files in os.walk(self.apollogffpath, topdown=False):
+				for name in files:
+					os.unlink(os.path.join(root, name))
+
+	#
+	# Make any Apollo export related directories
+	#
+	def create_apollo_export_folders(self):
+	
+		# Result files folder
+		if not os.path.isdir(self.apollogffpath):
+			os.makedirs(self.apollogffpath)
+		
+		# Target ftp site folder
+		if self.copytoftpsiteflag == True and not os.path.isdir(self.ftptargetfolder):
+			os.makedirs(self.ftptargetfolder)
+				
 	#
 	# Delivers list of annotated organisms to export,
 	# in manageable chunks using yield.
@@ -407,10 +557,13 @@ class ChadoGffExporter:
 
 	#
 	# Export the specified organism sequences to GFF from Chado.
+	# Creates export bash scripts and runs them on LSF.
 	#
 	def execute_export(self):
 	
 		jobs = []
+		donefiles = []
+		errorlogs = []
 		orgs = []
 		
 		i = 0
@@ -432,9 +585,11 @@ class ChadoGffExporter:
 			# construct per-node script
 			tf.write("#!/bin/bash\n")
 
+			tf.write("JOB_ERROR_STATUS=0\n")
+			
 			for org in sl:
 				orgpath = self.resultbasepath + "/" + org
-				tf.write("rm -rf " + orgpath + "\n")
+				tf.write("rm -rf \"" + orgpath + "\"\n")
 
 			tf.write(runstr + "\n")
 
@@ -455,37 +610,206 @@ class ChadoGffExporter:
 				# move result to separate directory
 				tf.write("cp " + orgpath + "/" + org + ".gff3.gz " + self.finalresultpath + "\n")
 				tf.write("cp " + orgpath + "/" + org + ".tidylog " + self.finalresultpath + "\n")
-				# split sequences and annotations
-				tf.write("GT_RETAINIDS=yes " + self.gtbin + " inlineseq_split -seqfile "+ self.finalresultpath + "/" + org + ".genome.fasta -gff3file " + self.finalresultpath + "/" + org + ".noseq.gff3 " + self.finalresultpath + "/" + org + ".gff3.gz\n")
-				# gzip everything
-				tf.write("gzip -f " + self.finalresultpath + "/" + org + ".genome.fasta \n")
-				tf.write("gzip -f " + self.finalresultpath + "/" + org + ".noseq.gff3 \n")
-				# prepare cDNA and protein sequences
-				tf.write("GT_RETAINIDS=yes " + self.gtbin + " extractfeat -type CDS -join -translate -retainids -seqfile "+ self.finalresultpath + "/" + org + ".genome.fasta.gz -matchdescstart -force -o " + self.finalresultpath + "/" + org + ".prot.fasta.gz -gzip " + self.finalresultpath + "/" + org + ".noseq.gff3.gz \n")
-				tf.write("GT_RETAINIDS=yes " + self.gtbin + " extractfeat -type mRNA -retainids -seqfile "+ self.finalresultpath + "/" + org + ".genome.fasta.gz -matchdescstart -force -o " + self.finalresultpath + "/" + org + ".cdna.fasta.gz -gzip " + self.finalresultpath + "/" + org + ".noseq.gff3.gz \n")
-				# clean up indices
-				tf.write("rm -f " + self.finalresultpath + "/" + org + ".genome.fasta.gz.* \n")
-				tf.write("chmod -R 777 " + self.finalresultpath + " \n")
-				# make GAFs
-				tf.write("get_GO_association.pl -type transcript -o " + org + " > " + self.finalresultpath + "/" + org + ".gaf \n")
+				
+				if self.apolloexport == False:
+					# split sequences and annotations
+					tf.write("GT_RETAINIDS=yes " + self.gtbin + " inlineseq_split -seqfile "+ self.finalresultpath + "/" + org + ".genome.fasta -gff3file " + self.finalresultpath + "/" + org + ".noseq.gff3 " + self.finalresultpath + "/" + org + ".gff3.gz\n")
+					# gzip everything
+					tf.write("gzip -f " + self.finalresultpath + "/" + org + ".genome.fasta \n")
+					tf.write("gzip -f " + self.finalresultpath + "/" + org + ".noseq.gff3 \n")
+					# prepare cDNA and protein sequences
+					tf.write("GT_RETAINIDS=yes " + self.gtbin + " extractfeat -type CDS -join -translate -retainids -seqfile "+ self.finalresultpath + "/" + org + ".genome.fasta.gz -matchdescstart -force -o " + self.finalresultpath + "/" + org + ".prot.fasta.gz -gzip " + self.finalresultpath + "/" + org + ".noseq.gff3.gz \n")
+					tf.write("GT_RETAINIDS=yes " + self.gtbin + " extractfeat -type mRNA -retainids -seqfile "+ self.finalresultpath + "/" + org + ".genome.fasta.gz -matchdescstart -force -o " + self.finalresultpath + "/" + org + ".cdna.fasta.gz -gzip " + self.finalresultpath + "/" + org + ".noseq.gff3.gz \n")
+					# clean up indices
+					tf.write("rm -f " + self.finalresultpath + "/" + org + ".genome.fasta.gz.* \n")
+					tf.write("chmod -R 777 " + self.finalresultpath + " \n")
+					# make GAFs
+					tf.write("get_GO_association.pl -type transcript -o " + org + " > " + self.finalresultpath + "/" + org + ".gaf \n")
+				
+				# Clean-up working writedbentry files to save disk space
+				tf.write("rm -rf \"" + orgpath + "\"\n")
+				
+				#
+				# If this export is for Apollo then we must convert the gff file features to the correct parent-child relationship 
+				# and copy to ftp site.
+				#
+				if self.apolloexport == True:
+					
+					inputfile = self.finalresultpath + "/" + org + ".gff3.gz"
+					outputfile = self.apollogffpath + "/" + org + ".gff3.gz"
+					
+					tf.write(self.construct_apollo_converter_app_cmds(inputfile, outputfile) + "\n")
+					
+					if self.copytoftpsiteflag == True:
+						tf.write("cp " + outputfile + " " + self.ftptargetfolder + "/" + "\n")
+						tf.write("ln -s -f -n " + self.ftptargetfolder + " " + self.ftpsitefolder + "/" + "latest\n")
+				
 				tf.write("\n")
-
-			tf.write("touch " + self.statuspath + "/" + scriptname + ".done\n")
+			
+			donefile = self.statuspath + "/" + scriptname + ".done"
+			
+			tf.write("touch " + donefile + "\n")
 			tf.close()
+			
 			os.chmod(self.scriptpath + "/" + scriptname, 0o775)
 
-			#submit script to LSF
-			execline = "source /etc/bashrc; bsub -J chadoexport" + str(i) + " -q " + self.queue + " -n2  " + \
+			errorlog = self.logpath + "/" + scriptname + ".e"
+			jobid = self.jobtitle + str(i)
+			
+			# Create LSF job execution string
+			execline = "source /etc/bashrc; bsub -J " + jobid + " -q " + self.queue + " -n4  " + \
 		              "-R 'select[mem>3500] rusage[mem=3500] span[hosts=1]' -M 3500 " + \
 		              "-o " + self.logpath + "/" + scriptname  + ".o " + \
-		              "-e " + self.logpath + "/" + scriptname + ".e " + \
+		              "-e " + errorlog + " " + \
 		              str(self.scriptpath) + "/" + str(scriptname)
-			jobs.append("chado-export-job%d" % i)
+			
+			# Keep track of the jobs that we need to monitor...
+			donefiles.append(donefile)
+			errorlogs.append(errorlog)
+			jobs.append(jobid)
 
+			# Submit script to LSF
 			if self.run_jobs_flag == True:
 				print("starting job %d -- %s" % (i, scriptname))
 				self.run_bash(execline)
 
+		# Submit dependent "completion checker" job.
+		# This job runs when all export jobs have finished.
+		# We add a small delay as it's possible for the checker to 
+		# sometimes get scheduled before export jobs and consequently 
+		# exit immediately (race condition).
+		#
+		if len(jobs) > 0 and self.apolloexport == True:
+			print("waiting to start chado export completion checker job...")
+			time.sleep(10)
+			self.run_checker_job(jobs, donefiles, errorlogs);
+
+
+	#
+	# Create a job that runs upon completion of the export jobs.
+	# It checks successful completion and emails a report.
+	#
+	def run_checker_job(self, jobs, donefiles, errorlogs):
+		
+		if len(donefiles) == 0:
+			return
+			
+		checkerjobname = "chk-" + self.jobtitle
+		checkerjobscript = self.scriptpath + "/" + checkerjobname + ".sh"
+		
+		cf = open(checkerjobscript, "w+")
+		self.write_checker_job_script(cf, donefiles, errorlogs)
+		cf.close()
+		os.chmod(checkerjobscript, 0o775)
+		
+		cmd = self.construct_checker_job_invoker_cmd(checkerjobscript, checkerjobname)
+		              
+		if self.run_jobs_flag == True:
+			print("starting chado export completion checker job")
+			self.run_bash(cmd)
+	
+
+# ================= Local utility methods ======================
+
+	#
+	# Read properties related to an apollo export files.
+	# i.e. specially processed GFFs used for importing into
+	# Web Apollo.
+	#
+	# This functionality is bolted on for Sanger and not part of the normal usage.
+	#
+	def read_apollo_export_configuration(self, config):
+	
+		self.apolloexport = False
+		
+		# Handle exports from Chado that will be imported to Apollo. 
+		# These properties are not required if the export is not Apollo related
+		try:
+			self.apolloconverterapp = config.get('ApolloExport', 'apollo_gff_converter_app_path').strip()
+			
+			flag = config.get('ApolloExport', 'copy_to_ftp_site_flag').strip()
+			if flag == "yes":
+				self.copytoftpsiteflag = True
+				self.ftpsitefolder = config.get('ApolloExport', 'ftp_site_folder').strip()
+				self.ftpdatedfolder = time.strftime('%Y%m%d')
+				self.ftptargetfolder = self.ftpsitefolder + "/"+ self.ftpdatedfolder
+			else:
+				self.copytoftpsiteflag = False
+				self.ftpsitefolder = ''
+				self.ftptargetfolder = ''
+
+			self.reportemailaddress = config.get('ApolloExport', 'report_email_address').strip()
+			
+			try:
+				self.apolloconverterappargs = config.get('ApolloExport', 'apollo_gff_converter_app_args')
+				self.apolloconverterappargs = self.apolloconverterappargs.strip()
+			except:
+				pass
+			
+			self.apollogffpath = self.targetpath + "/apollo_files"
+			self.apolloexport = True
+
+		except (configparser.NoSectionError):
+			pass
+			
+	#
+	# Construct the shell command line string used to 
+	# invoke the Apollo gff polypeptide converter program.
+	# The program can accept gzipped or non-gzip input.
+	#
+	def construct_apollo_converter_app_cmds(self, inputfile, outputfile):
+		
+		cmd = "if [[ -s \"" + inputfile + "\" ]]; then\n"
+		cmd = cmd + "	set -o pipefail\n"
+		cmd = cmd + "	gzip -d -c " + inputfile + " | " + self.apolloconverterapp + " " + self.apolloconverterappargs + " | gzip > " + outputfile + "\n"
+		cmd = cmd + "	status=$?\n"
+		cmd = cmd + "	if [[ $status -ne 0 ]]; then\n"
+		cmd = cmd + "		echo \"ERROR: " + self.apolloconverterapp + " processing failed with status $status.\" 1>&2\n"
+		cmd = cmd + "		JOB_ERROR_STATUS=1\n"
+		cmd = cmd + "	fi\n"
+		cmd = cmd + "else\n"
+		cmd = cmd + "	echo \"WARNING: " + inputfile + " does not exist or is empty\"\n"
+		cmd = cmd + "fi\n"
+		
+		return cmd
+
+	#
+	# Utility method to create the completion checker LSF job command string.
+	# To be run when all export jobs have finished.
+	# Uses a wildcard to match job names.
+	#
+	def construct_checker_job_invoker_cmd(self, jobscriptpath, name):
+		
+		condition = "ended(" + self.jobtitle + "*)"
+			
+		cmd = "source /etc/bashrc; bsub -J " + name + " -q " + self.queue + \
+		         " -R 'select[mem>3500] rusage[mem=3500] span[hosts=1]' -M 3500 " + \
+		          "-o " + self.logpath + "/" + name  + ".o " + \
+		          "-e " + self.logpath + "/" + name + ".e " + \
+		          "-w \'" + condition + "' " + \
+		          str(jobscriptpath)
+		          
+		return cmd
+	
+	#
+	# Utility method to write the completion checker job
+	# bash script, to a given stream.
+	#
+	def write_checker_job_script(self, outstream, donefiles, errorlogs):
+	
+		outstream.write("#!/bin/bash\n")
+		outstream.write("MAILMSG=\n")
+		
+		for donefile in donefiles:
+			outstream.write("if [[ ! -f " + donefile + " ]]; then MAILMSG=${MAILMSG}'ERROR: Cannot find Chado export job completion file: " + donefile + "\\n'; fi\n")
+		
+		for errorlog in errorlogs:
+			outstream.write("if [[ -s " + errorlog + " ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: " + errorlog + "\\n'; fi\n")
+		
+		outstream.write( "if [[ \"$MAILMSG\" == \"\" ]]; then echo \"Organism data has been exported to gff files.\" | mailx -s 'Chado export job completed successfully' " + self.reportemailaddress + "; fi\n" )
+		outstream.write( "if [[ \"$MAILMSG\" != \"\" ]]; then echo -e $MAILMSG | mailx -s 'Chado export job has errors - investigation required' " + self.reportemailaddress + "; fi\n" )
+
+          
 # ================= Run it =====================================
 
 if __name__ == '__main__':

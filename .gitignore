@@ -1,10 +1,12 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+build/
 
 # Distribution / packaging
 *.egg-info/
 *.egg
+*.eggs
 
 .DS_Store
 
