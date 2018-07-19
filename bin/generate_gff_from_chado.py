@@ -731,7 +731,8 @@ class ChadoGffExporter:
 			if flag == "yes":
 				self.copytoftpsiteflag = True
 				self.ftpsitefolder = config.get('ApolloExport', 'ftp_site_folder').strip()
-				self.ftptargetfolder = self.ftpsitefolder + "/"+ time.strftime('%Y%m%d')
+				self.ftpdatedfolder = time.strftime('%Y%m%d')
+				self.ftptargetfolder = self.ftpsitefolder + "/"+ self.ftpdatedfolder
 			else:
 				self.copytoftpsiteflag = False
 				self.ftpsitefolder = ''

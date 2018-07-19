@@ -122,8 +122,8 @@ class TestChadoGffExporter:
 		self.chadoGffExporter.display_configuration()
     		
 		# Then
-		assert self.chadoGffExporter.gtbin_property == '/software/pathogen/external/apps/usr/local/genometools-1.5.9/bin/gt'
-		assert self.chadoGffExporter.writedbentrypath_property == '/software/pathogen/projects/artemis/current/etc/writedb_entry'
+		assert self.chadoGffExporter.gtbin_property == '/applications/gt'
+		assert self.chadoGffExporter.writedbentrypath_property == '/applications/writedb_entry'
 		assert self.chadoGffExporter.slice_size_property == 10
 		assert self.chadoGffExporter.queue_property == 'basement'
 		assert self.chadoGffExporter.jobtitle_property == "chadoexp"
