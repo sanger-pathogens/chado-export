@@ -138,6 +138,7 @@ class TestChadoGffExporter:
 		assert len(self.chadoGffExporter.apolloconverterappargs_property) == 0
 		assert len(self.chadoGffExporter.ftpsitefolder_property) == 0
 		assert len(self.chadoGffExporter.reportemailaddress_property) == 0
+		assert self.chadoGffExporter.checkerjobstartdelay_property == 10
 
 	def test_07_read_organism_list_from_file(self):
 	
@@ -297,6 +298,7 @@ class TestChadoGffExporter:
 		jobs = [ "jobscript1", "jobscript2", "jobscript3" ]
 		logs = [ "/tmp/jobscript1.e", "/tmp/jobscript2.e", "/tmp/jobscript3.e" ]
 		self.chadoGffExporter.reportemailaddress_property = 'person@address.com'
+		self.chadoGffExporter.jobtitle_property = 'GenedbExport'
 		
 		expected_output = "#!/bin/bash\n" + \
 						"MAILMSG=\n" + \
@@ -306,8 +308,8 @@ class TestChadoGffExporter:
 						"if [[ -s /tmp/jobscript1.e ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: /tmp/jobscript1.e\\n'; fi\n" + \
 						"if [[ -s /tmp/jobscript2.e ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: /tmp/jobscript2.e\\n'; fi\n" + \
 						"if [[ -s /tmp/jobscript3.e ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: /tmp/jobscript3.e\\n'; fi\n" + \
-						"if [[ \"$MAILMSG\" == \"\" ]]; then echo \"Organism data has been exported to gff files.\" | mailx -s 'Chado export job completed successfully' person@address.com; fi\n" + \
-						"if [[ \"$MAILMSG\" != \"\" ]]; then echo -e $MAILMSG | mailx -s 'Chado export job has errors - investigation required' " + self.chadoGffExporter.reportemailaddress_property + "; fi\n"
+						"if [[ \"$MAILMSG\" == \"\" ]]; then echo \"Organism data has been exported to gff files.\" | mailx -s 'Chado export job [" + self.chadoGffExporter.jobtitle_property + "] completed successfully' person@address.com; fi\n" + \
+						"if [[ \"$MAILMSG\" != \"\" ]]; then echo -e $MAILMSG | mailx -s 'Chado export job [" + self.chadoGffExporter.jobtitle_property + "] has errors - investigation required' " + self.chadoGffExporter.reportemailaddress_property + "; fi\n"
 		
 		stream = io.StringIO()
 		
@@ -355,4 +357,5 @@ class TestChadoGffExporter:
 		assert self.chadoGffExporter.reportemailaddress_property == "person@address.com"	
 		assert self.chadoGffExporter.apollogffpath_property == self.chadoGffExporter.targetpath_property + "/apollo_files"
 		assert self.chadoGffExporter.jobtitle_property == "apollojob"
+		assert self.chadoGffExporter.checkerjobstartdelay_property == 20
 

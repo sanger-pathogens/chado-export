@@ -32,6 +32,7 @@ class ChadoGffExporter:
 		self.reportemailaddress = ''
 		self.apolloconverterappargs = ''
 		self.apollogffpath = ''
+		self.checkerjobstartdelay = 10
 		
 	# ------
 	
@@ -253,7 +254,16 @@ class ChadoGffExporter:
 	def run_jobs(self, value):
 		self.run_jobs_flag = value
 	
+	# ------
 	
+	@property
+	def checkerjobstartdelay_property(self):
+		return self.checkerjobstartdelay
+		
+	@checkerjobstartdelay_property.setter
+	def checkerjobstartdelay_property(self, value):
+		self.checkerjobstartdelay = value
+		
 	#
 	# Top-level function to run the export
 	#
@@ -371,6 +381,10 @@ class ChadoGffExporter:
 			if not re.match("[^@]+@[^@]+\.[^@]+", self.reportemailaddress):
 				print('Configuration file report_email_address property is not a valid email address: %s' % (self.reportemailaddress))
 				valid = False
+				
+			if self.checkerjobstartdelay < 1:
+				print('Configuration file checker_job_start_delay_secs property is not permitted to be less than 1 second: %s' % (self.checkerjobstartdelay))
+				valid = False
 
 		if valid == False:
 			exit(1)
@@ -403,6 +417,7 @@ class ChadoGffExporter:
 		print("apollogffpath property: %s" % (self.apollogffpath))
 		print("copytoftpsiteflag property: %s" % (self.copytoftpsiteflag))
 		print("ftpsitefolder property: %s" % (self.ftpsitefolder))
+		print("checkerjobstartdelay property: %s" % (str(self.checkerjobstartdelay)))
 	
 	#
 	# Read a bespoke list of organisms to export, from file.
@@ -642,7 +657,6 @@ class ChadoGffExporter:
 					
 					if self.copytoftpsiteflag == True:
 						tf.write("cp " + outputfile + " " + self.ftptargetfolder + "/" + "\n")
-						tf.write("ln -s -f -n " + self.ftptargetfolder + " " + self.ftpsitefolder + "/" + "latest\n")
 				
 				tf.write("\n")
 			
@@ -681,7 +695,7 @@ class ChadoGffExporter:
 		#
 		if len(jobs) > 0 and self.apolloexport == True:
 			print("waiting to start chado export completion checker job...")
-			time.sleep(10)
+			time.sleep(self.checkerjobstartdelay)
 			self.run_checker_job(jobs, donefiles, errorlogs);
 
 
@@ -745,6 +759,14 @@ class ChadoGffExporter:
 				self.apolloconverterappargs = self.apolloconverterappargs.strip()
 			except:
 				pass
+				
+			try:
+				tmpstartdelay = config.get('ApolloExport', 'checker_job_start_delay_secs')
+				self.checkerjobstartdelay = int(tmpstartdelay.strip())
+			except ValueError as verr:
+				raise Exception('The property checker_job_start_delay_secs is not a valid integer. Please correct the value before restarting.')
+			except Exception as ex:
+				pass
 			
 			self.apollogffpath = self.targetpath + "/apollo_files"
 			self.apolloexport = True
@@ -806,8 +828,8 @@ class ChadoGffExporter:
 		for errorlog in errorlogs:
 			outstream.write("if [[ -s " + errorlog + " ]]; then MAILMSG=${MAILMSG}'ERROR: Errors detected in log file: " + errorlog + "\\n'; fi\n")
 		
-		outstream.write( "if [[ \"$MAILMSG\" == \"\" ]]; then echo \"Organism data has been exported to gff files.\" | mailx -s 'Chado export job completed successfully' " + self.reportemailaddress + "; fi\n" )
-		outstream.write( "if [[ \"$MAILMSG\" != \"\" ]]; then echo -e $MAILMSG | mailx -s 'Chado export job has errors - investigation required' " + self.reportemailaddress + "; fi\n" )
+		outstream.write( "if [[ \"$MAILMSG\" == \"\" ]]; then echo \"Organism data has been exported to gff files.\" | mailx -s 'Chado export job [" + self.jobtitle + "] completed successfully' " + self.reportemailaddress + "; fi\n" )
+		outstream.write( "if [[ \"$MAILMSG\" != \"\" ]]; then echo -e $MAILMSG | mailx -s 'Chado export job [" + self.jobtitle + "] has errors - investigation required' " + self.reportemailaddress + "; fi\n" )
 
           
 # ================= Run it =====================================
