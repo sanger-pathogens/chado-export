@@ -656,8 +656,10 @@ class ChadoGffExporter:
 					tf.write(self.construct_apollo_converter_app_cmds(inputfile, outputfile) + "\n")
 					
 					if self.copytoftpsiteflag == True:
-						tf.write("cp " + outputfile + " " + self.ftptargetfolder + "/" + "\n")
-				
+						tf.write("if [[ -s \"" + outputfile + "\" ]]; then\n")
+						tf.write("   cp " + outputfile + " " + self.ftptargetfolder + "/" + "\n")
+						tf.write("fi\n")
+
 				tf.write("\n")
 			
 			donefile = self.statuspath + "/" + scriptname + ".done"
@@ -787,6 +789,7 @@ class ChadoGffExporter:
 		cmd = cmd + "	status=$?\n"
 		cmd = cmd + "	if [[ $status -ne 0 ]]; then\n"
 		cmd = cmd + "		echo \"ERROR: " + self.apolloconverterapp + " processing failed with status $status.\" 1>&2\n"
+		cmd = cmd + "		rm -f " + outputfile + "\n"
 		cmd = cmd + "		JOB_ERROR_STATUS=1\n"
 		cmd = cmd + "	fi\n"
 		cmd = cmd + "else\n"
