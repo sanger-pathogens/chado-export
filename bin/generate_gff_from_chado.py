@@ -33,7 +33,7 @@ class ChadoGffExporter:
 		self.apolloconverterappargs = ''
 		self.apollogffpath = ''
 		self.checkerjobstartdelay = 10
-		
+
 	# ------
 	
 	@property
@@ -365,7 +365,7 @@ class ChadoGffExporter:
 			print('Configuration file genome_tools_bin property is not valid: %s' % (self.gtbin))
 			valid = False
 			
-		if len(self.writedbentrypath) == 0 or not os.path.isfile(self.writedbentrypath):
+		if len(self.writedbentrypath) == 0:
 			print('Configuration file write_db_entry_path property is not valid: %s' % (self.writedbentrypath))
 			valid = False
 			
