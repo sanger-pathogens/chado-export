@@ -3,6 +3,7 @@
 import sys
 import psycopg2
 import os
+import shutil
 import subprocess
 import configparser
 import argparse
@@ -356,21 +357,21 @@ class ChadoGffExporter:
 	def validate_config(self):
 	
 		valid = True
-		
+
 		if len(self.targetpath) <= 1 or (not os.path.isdir(self.targetpath)):
 			print('Configuration file target_path property does not point to a valid directory: %s' % (self.targetpath))
 			valid = False
 			
-		if len(self.gtbin) == 0 or not os.path.isfile(self.gtbin):
+		if len(self.gtbin) == 0 or shutil.which(self.gtbin) is None:
 			print('Configuration file genome_tools_bin property is not valid: %s' % (self.gtbin))
 			valid = False
 			
-		if len(self.writedbentrypath) == 0:
+		if len(self.writedbentrypath) == 0 or shutil.which(self.writedbentrypath) is None:
 			print('Configuration file write_db_entry_path property is not valid: %s' % (self.writedbentrypath))
 			valid = False
 			
 		if self.apolloexport == True:
-			if len(self.apolloconverterapp) == 0 or not os.path.isfile(self.apolloconverterapp):
+			if len(self.apolloconverterapp) == 0 or shutil.which(self.apolloconverterapp) is None:
 				print('Configuration file apollo_gff_converter_app_path property is not valid: %s' % (self.apolloconverterapp))
 				valid = False
 				
