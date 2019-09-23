@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
 import sys
+import stat
 import os
 import pkg_resources
 import unittest
 import io
+import tempfile
+import subprocess
 
 from nose import SkipTest
 
@@ -50,13 +53,13 @@ class TestChadoGffExporter:
 			
 	
 	def test_01_read_program_arguments1(self):
-    
+
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
-    		
+
 		# Then
 		assert self.chadoGffExporter.apolloexport_property == False
 		assert self.chadoGffExporter.configfile_property.endswith(TestChadoGffExporter.INI_FILE)
@@ -68,10 +71,10 @@ class TestChadoGffExporter:
 		
 		# Given
 		args = ['program_name', '-a', '-i', TestChadoGffExporter.INI_FILE]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
-    		
+
 		# Then
 		assert self.chadoGffExporter.dump_all_property == True
 		
@@ -79,10 +82,10 @@ class TestChadoGffExporter:
 		
 		# Given
 		args = ['program_name', '-i', '/somedirectory/config.ini']
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
-    		
+
 		# Then
 		assert self.chadoGffExporter.configfile_property == '/somedirectory/config.ini'
 		
@@ -90,10 +93,10 @@ class TestChadoGffExporter:
 		
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', '/somedirectory/organism.list']
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
-    		
+
 		# Then
 		assert self.chadoGffExporter.org_list_file_property == '/somedirectory/organism.list'
 		
@@ -101,10 +104,10 @@ class TestChadoGffExporter:
 	
 		# Given
 		args = ['program_name', '-a', '-i', '/somedirectory/config.ini', '-f', '/somedirectory/organism.list']
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
-    		
+
 		# Then
 		assert self.chadoGffExporter.configfile_property == '/somedirectory/config.ini'
 		assert self.chadoGffExporter.dump_all_property == True
@@ -112,15 +115,15 @@ class TestChadoGffExporter:
 	
 	
 	def test_06_read_configuration(self):
-    
+
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
 		self.chadoGffExporter.display_configuration()
-    		
+
 		# Then
 		assert self.chadoGffExporter.gtbin_property == '/applications/gt'
 		assert self.chadoGffExporter.writedbentrypath_property == '/applications/writedb_entry'
@@ -144,7 +147,7 @@ class TestChadoGffExporter:
 	
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
@@ -162,7 +165,7 @@ class TestChadoGffExporter:
 		
 		# Given
 		args = ['program_name', '-a', '-i', TestChadoGffExporter.INI_FILE]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
@@ -183,7 +186,7 @@ class TestChadoGffExporter:
 	
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
@@ -203,7 +206,7 @@ class TestChadoGffExporter:
 	
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE2]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
@@ -227,7 +230,7 @@ class TestChadoGffExporter:
 			
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
@@ -250,7 +253,7 @@ class TestChadoGffExporter:
 			
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.APOLLO_INI_FILE, '-f', 'test/'+TestChadoGffExporter.ORGLIST_FILE1]
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
@@ -276,7 +279,7 @@ class TestChadoGffExporter:
 		
 		# Don't actually run the export..
 		self.chadoGffExporter.run_jobs = False
-    		
+
 		# When
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
@@ -339,15 +342,15 @@ class TestChadoGffExporter:
 		assert cmd1 == expected_output1	
 	
 	def test_15_read_configuration_with_apollo_export(self):
-    
+
 		# Given
 		args = ['program_name', '-i', TestChadoGffExporter.APOLLO_INI_FILE]
 		self.chadoGffExporter.read_program_arguments(args)
 		self.chadoGffExporter.read_configuration()
-    		
+
 		# When - set properties programmatically
 		
-    		
+
 		# Then
 		assert self.chadoGffExporter.apolloexport_property == True
 		assert self.chadoGffExporter.apolloconverterapp_property == "script.sh"
@@ -358,4 +361,108 @@ class TestChadoGffExporter:
 		assert self.chadoGffExporter.apollogffpath_property == self.chadoGffExporter.targetpath_property + "/apollo_files"
 		assert self.chadoGffExporter.jobtitle_property == "apollojob"
 		assert self.chadoGffExporter.checkerjobstartdelay_property == 20
+
+	def test_16_validate_config_abs_paths(self):
+
+		# Very basic validation tests using absolute paths
+
+		gtbin = None
+		writedbentrypath = None
+		apolloconverterapp = None
+		target_test_path = None
+		ftpsitefolder_test_path = None
+
+		try:
+			# Given
+
+			dependency_temp_dir = tempfile.TemporaryDirectory()
+
+			try:
+				gtbin = open(os.path.join(dependency_temp_dir.name, "gt-test"), "w+")
+				os.chmod(gtbin.name, stat.S_IEXEC)
+				writedbentry = open(os.path.join(dependency_temp_dir.name, "writedb_entry-test"), "w+")
+				os.chmod(writedbentry.name, stat.S_IEXEC)
+				apolloconverterapp = open(os.path.join(dependency_temp_dir.name, "gffmunger-test"), "w+")
+				os.chmod(apolloconverterapp.name, stat.S_IEXEC)
+			finally:
+				gtbin.close()
+				writedbentry.close()
+				apolloconverterapp.close()
+
+			target_test_path = tempfile.TemporaryDirectory()
+			ftpsitefolder_test_path = tempfile.TemporaryDirectory()
+
+			self.chadoGffExporter.gtbin_property = gtbin.name
+			self.chadoGffExporter.writedbentrypath_property = writedbentry.name
+			self.chadoGffExporter.apolloconverterapp_property = apolloconverterapp.name
+			self.chadoGffExporter.targetpath_property = target_test_path.name
+			self.chadoGffExporter.ftpsitefolder_property = ftpsitefolder_test_path.name
+
+			self.chadoGffExporter.apolloexport_property = True
+			self.chadoGffExporter.copytoftpsiteflag_property = True
+			self.chadoGffExporter.reportemailaddress_property = 'person@address.com'
+			self.chadoGffExporter.checkerjobstartdelay_property = 3
+
+			# When/Then - should be valid (exits if not!)
+			self.chadoGffExporter.validate_config()
+
+		finally:
+			dependency_temp_dir.cleanup()
+			target_test_path.cleanup()
+			ftpsitefolder_test_path.cleanup()
+
+	def test_17_validate_config_sys_path(self):
+
+		# Very basic validation tests using system path to pick up dependency programs
+
+		gtbin = None
+		writedbentrypath = None
+		apolloconverterapp = None
+		target_test_path = None
+		ftpsitefolder_test_path = None
+
+		try:
+			# Given
+
+			dependency_temp_dir = tempfile.TemporaryDirectory()
+
+			try:
+				gtbin = open(os.path.join(dependency_temp_dir.name, "gt-test"), "w+")
+				os.chmod(gtbin.name, stat.S_IEXEC)
+				writedbentry = open(os.path.join(dependency_temp_dir.name, "writedb_entry-test"), "w+")
+				os.chmod(writedbentry.name, stat.S_IEXEC)
+				apolloconverterapp = open(os.path.join(dependency_temp_dir.name, "gffmunger-test"), "w+")
+				os.chmod(apolloconverterapp.name, stat.S_IEXEC)
+			finally:
+				gtbin.close()
+				writedbentry.close()
+				apolloconverterapp.close()
+
+			target_test_path = tempfile.TemporaryDirectory()
+			ftpsitefolder_test_path = tempfile.TemporaryDirectory()
+
+			# Only store the dependency file names, not absolute paths for this test
+			self.chadoGffExporter.gtbin_property = os.path.basename(gtbin.name)
+			self.chadoGffExporter.writedbentrypath_property = os.path.basename(writedbentry.name)
+			self.chadoGffExporter.apolloconverterapp_property = os.path.basename(apolloconverterapp.name)
+
+			self.chadoGffExporter.targetpath_property = target_test_path.name
+			self.chadoGffExporter.ftpsitefolder_property = ftpsitefolder_test_path.name
+
+			# Set the dependency directory(s) in the system path
+			os.environ["PATH"] = dependency_temp_dir.name
+
+			self.chadoGffExporter.apolloexport_property = True
+			self.chadoGffExporter.copytoftpsiteflag_property = True
+			self.chadoGffExporter.reportemailaddress_property = "person@address.com"
+			self.chadoGffExporter.checkerjobstartdelay_property = 3
+
+			# When/Then - should be valid (exits if not!)
+			self.chadoGffExporter.validate_config()
+
+		finally:
+			dependency_temp_dir.cleanup()
+			target_test_path.cleanup()
+			ftpsitefolder_test_path.cleanup()
+
 
