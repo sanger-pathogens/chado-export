@@ -21,7 +21,7 @@ class ChadoGffExporter:
 
 	def __init__(self, prog_args):
 		self.prog_args = prog_args
-		self.run_jobs_flag = False
+		self.run_jobs_flag = True
 		
 		self.jobtitle="chadoexp"
 		
