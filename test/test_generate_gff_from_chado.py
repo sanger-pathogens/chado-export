@@ -65,6 +65,7 @@ class TestChadoGffExporter:
 		assert self.chadoGffExporter.configfile_property.endswith(TestChadoGffExporter.INI_FILE)
 		assert self.chadoGffExporter.org_list_file_property == TestChadoGffExporter.DEFAULT_ORG_LIST_FILE
 		assert self.chadoGffExporter.dump_all_property == False
+		assert self.chadoGffExporter.gt_filepath_wildcard_escaping_property == False
 		
 		
 	def test_02_read_program_arguments2(self):
@@ -142,6 +143,8 @@ class TestChadoGffExporter:
 		assert len(self.chadoGffExporter.ftpsitefolder_property) == 0
 		assert len(self.chadoGffExporter.reportemailaddress_property) == 0
 		assert self.chadoGffExporter.checkerjobstartdelay_property == 10
+
+		assert self.chadoGffExporter.gt_filepath_wildcard_escaping_property == False
 
 	def test_07_read_organism_list_from_file(self):
 	
@@ -465,4 +468,35 @@ class TestChadoGffExporter:
 			target_test_path.cleanup()
 			ftpsitefolder_test_path.cleanup()
 
+	def test_18a_escape_gt_wildcards(self):
 
+		# Test when flag is false, no escaping
+
+		# Given
+		args = ['program_name', '-a', '-i', TestChadoGffExporter.INI_FILE]
+
+		# When
+		self.chadoGffExporter.read_program_arguments(args)
+		self.chadoGffExporter.read_configuration()
+
+		# Then
+		assert self.chadoGffExporter.escape_gt_wildcards(r'/*.gff.gz') == r'/*.gff.gz'
+
+	def test_18b_escape_gt_wildcards(self):
+
+		# Test when flag is true, so get escaping
+
+		ini_file_flag_true = os.path.join(sys.path[0] + '/resources/test18/test_generate_gff_from_chado.ini')
+
+		# Given
+		args = ['program_name', '-a', '-i', ini_file_flag_true]
+
+		# When
+		self.chadoGffExporter.read_program_arguments(args)
+		self.chadoGffExporter.read_configuration()
+
+		# Then
+		assert self.chadoGffExporter.escape_gt_wildcards(r'/*.gff.gz') == r'/\*.gff.gz'
+		assert self.chadoGffExporter.escape_gt_wildcards(r'/folder1/*/*.gff.gz') == r'/folder1/\*/\*.gff.gz'
+		assert self.chadoGffExporter.escape_gt_wildcards(r'/folder1/file1') == r'/folder1/file1'
+		assert self.chadoGffExporter.escape_gt_wildcards(r'') == r''
