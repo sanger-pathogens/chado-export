@@ -35,6 +35,8 @@ class ChadoGffExporter:
 		self.apollogffpath = ''
 		self.checkerjobstartdelay = 10
 
+		self.__gt_filepath_wildcard_escaping = False
+
 	# ------
 	
 	@property
@@ -264,6 +266,16 @@ class ChadoGffExporter:
 	@checkerjobstartdelay_property.setter
 	def checkerjobstartdelay_property(self, value):
 		self.checkerjobstartdelay = value
+
+	# ------
+
+	@property
+	def gt_filepath_wildcard_escaping_property(self):
+		return self.__gt_filepath_wildcard_escaping
+
+	@gt_filepath_wildcard_escaping_property.setter
+	def gt_filepath_wildcard_escaping_property(self, value):
+		self.__gt_filepath_wildcard_escaping = value
 		
 	#
 	# Top-level function to run the export
@@ -346,6 +358,12 @@ class ChadoGffExporter:
 		except Exception as err:
 			# Fall back to default name
 			pass
+
+		try:
+			self.__gt_filepath_wildcard_escaping = (config.get('General', 'gt_filepath_wildcard_escaping') == "True")
+		except Exception as err:
+			# Fall back to default value
+			pass
 				
 		# Read any properties related to Apollo export
 		self.read_apollo_export_configuration(config)
@@ -395,30 +413,31 @@ class ChadoGffExporter:
 	#
 	def display_configuration(self):
 	
-		print("dump_all property: %s" % (self.dump_all))
-		print("gtbin property: %s" % (self.gtbin))
-		print("writedbentrypath property: %s" % (self.writedbentrypath))
-		print("org_list_file property: %s" % (self.org_list_file))
-		print("slice_size property: %d" % (self.slice_size))
-		print("queue property: %s" % (self.queue))
-		print("targetpath property: %s" % (self.targetpath))
-		print("finalresultpath property: %s" % (self.finalresultpath))
-		print("scriptpath property: %s" % (self.scriptpath))
-		print("logpath property: %s" % (self.logpath))
-		print("statuspath property: %s" % (self.statuspath))
-		print("resultbasepath property: %s" % (self.resultbasepath))
-		print("dbname property: %s" % (self.config.get('Connection', 'database')))
-		print("user property: %s" % (self.config.get('Connection', 'user')))
-		print("host property: %s" % (self.config.get('Connection', 'host')))
-		print("password property: %s" % (self.config.get('Connection', 'password')))
-		print("port property: %s" % (self.config.get('Connection', 'port')))
-		print("Apollo export flag: %s" % (self.apolloexport))
-		print("apolloconverterapp property: %s" % (self.apolloconverterapp))
-		print("apolloconverterappargs property: %s" % (self.apolloconverterappargs))
-		print("apollogffpath property: %s" % (self.apollogffpath))
-		print("copytoftpsiteflag property: %s" % (self.copytoftpsiteflag))
-		print("ftpsitefolder property: %s" % (self.ftpsitefolder))
-		print("checkerjobstartdelay property: %s" % (str(self.checkerjobstartdelay)))
+		print("dump_all property: %s" % self.dump_all)
+		print("gtbin property: %s" % self.gtbin)
+		print("writedbentrypath property: %s" % self.writedbentrypath)
+		print("org_list_file property: %s" % self.org_list_file)
+		print("slice_size property: %d" % self.slice_size)
+		print("queue property: %s" % self.queue)
+		print("targetpath property: %s" % self.targetpath)
+		print("finalresultpath property: %s" % self.finalresultpath)
+		print("scriptpath property: %s" % self.scriptpath)
+		print("logpath property: %s" % self.logpath)
+		print("statuspath property: %s" % self.statuspath)
+		print("resultbasepath property: %s" % self.resultbasepath)
+		print("dbname property: %s" % self.config.get('Connection', 'database'))
+		print("user property: %s" % self.config.get('Connection', 'user'))
+		print("host property: %s" % self.config.get('Connection', 'host'))
+		print("password property: %s" % self.config.get('Connection', 'password'))
+		print("port property: %s" % self.config.get('Connection', 'port'))
+		print("Apollo export flag: %s" % self.apolloexport)
+		print("apolloconverterapp property: %s" % self.apolloconverterapp)
+		print("apolloconverterappargs property: %s" % self.apolloconverterappargs)
+		print("apollogffpath property: %s" % self.apollogffpath)
+		print("copytoftpsiteflag property: %s" % self.copytoftpsiteflag)
+		print("ftpsitefolder property: %s" % self.ftpsitefolder)
+		print("checkerjobstartdelay property: %s" % str(self.checkerjobstartdelay))
+		print("gt_filepath_wildcard_escaping_property: %s" % self.__gt_filepath_wildcard_escaping)
 	
 	#
 	# Read a bespoke list of organisms to export, from file.
@@ -469,7 +488,7 @@ class ChadoGffExporter:
 	# Close the database connection.
 	#
 	def close_database_connection(self):
-	
+
 		try:
 		
 			self.conn.close()
@@ -530,7 +549,18 @@ class ChadoGffExporter:
 		# Target ftp site folder
 		if self.copytoftpsiteflag == True and not os.path.isdir(self.ftptargetfolder):
 			os.makedirs(self.ftptargetfolder)
-				
+
+	#
+	# Escape wildcards in the given gt path if necessary.
+	#
+	#
+	def escape_gt_wildcards(self, path):
+
+		if self.__gt_filepath_wildcard_escaping:
+			return path.replace("*", "\\*")
+
+		return path
+
 	#
 	# Delivers list of annotated organisms to export,
 	# in manageable chunks using yield.
@@ -612,15 +642,18 @@ class ChadoGffExporter:
 			for org in sl:
 				orgpath = self.resultbasepath + "/" + org
 				# flatten directory structure
-				tf.write("find " + orgpath + " -type f " + \
-		                "-exec mv {} " + orgpath + " \\;\n")
+				tf.write("find " + orgpath + " -type f " +
+					"-exec mv {} " + orgpath + " \\;\n")
 				# clean up logs
 				tf.write("rm -f " + orgpath + "/tidylog.log\n")
 				# remove empty dirs
 				tf.write("rmdir --ignore-fail-on-non-empty " + orgpath + "/?\n")
+
 				# merge GFFs into one file per organism
-				tf.write("GT_RETAINIDS=yes " + self.gtbin + " gff3 -sort -tidy -force -retainids -o " + \
-		                orgpath + "/" + org + ".gff3.gz -gzip " + orgpath + "/*.gff.gz 2> " + orgpath + "/" + org + ".tidylog \n")
+				search_path = escape_gt_wildcards("/*.gff.gz")
+				tf.write("GT_RETAINIDS=yes " + self.gtbin + " gff3 -sort -tidy -force -retainids -o " +
+					orgpath + "/" + org + ".gff3.gz -gzip " + orgpath + search_path + " 2> " + orgpath + "/" + org + ".tidylog \n")
+
 				# allow access to pathdev members
 				tf.write("chmod -R 775 " + orgpath + "\n")
 				# move result to separate directory
