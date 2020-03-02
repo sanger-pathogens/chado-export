@@ -1,8 +1,16 @@
 # Change Log
 
-## [Unreleased](https://github.com/sanger-pathogens/chado-export/tree/HEAD)
+## [v1.1.6](https://github.com/sanger-pathogens/chado-export/tree/v1.1.6) (2020-03-02)
+[Full Changelog](https://github.com/sanger-pathogens/chado-export/compare/v1.1.5...v1.1.6)
 
-[Full Changelog](https://github.com/sanger-pathogens/chado-export/compare/v1.1.2...HEAD)
+## [v1.1.5](https://github.com/sanger-pathogens/chado-export/tree/v1.1.5) (2020-02-25)
+[Full Changelog](https://github.com/sanger-pathogens/chado-export/compare/v1.1.4...v1.1.5)
+
+## [v1.1.4](https://github.com/sanger-pathogens/chado-export/tree/v1.1.4) (2019-09-23)
+[Full Changelog](https://github.com/sanger-pathogens/chado-export/compare/v1.1.3...v1.1.4)
+
+## [v1.1.3](https://github.com/sanger-pathogens/chado-export/tree/v1.1.3) (2019-07-11)
+[Full Changelog](https://github.com/sanger-pathogens/chado-export/compare/v1.1.2...v1.1.3)
 
 **Merged pull requests:**
 
@@ -31,4 +39,3 @@
 - Apollo export branch PR [\#1](https://github.com/sanger-pathogens/chado-export/pull/1) ([kpepper](https://github.com/kpepper))
 
 ## [v1.0.0](https://github.com/sanger-pathogens/chado-export/tree/v1.0.0) (2017-11-30)
-

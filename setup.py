@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='chado-export',
-    version='1.1.2',
+    version='1.1.6',
     description='generate_gff_from_chado.py: a script to export organism genome data in Chado, to GFF files.',
     package_dir={'': 'bin'},
 	package_data={'chado-export': ['bin/*.ini']},
@@ -26,5 +26,3 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     ],
 )
-
-
