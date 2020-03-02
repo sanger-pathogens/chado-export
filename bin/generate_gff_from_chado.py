@@ -672,8 +672,6 @@ class ChadoGffExporter:
 					# clean up indices
 					tf.write("rm -f " + self.finalresultpath + "/" + org + ".genome.fasta.gz.* \n")
 					tf.write("chmod -R 777 " + self.finalresultpath + " \n")
-					# make GAFs
-					tf.write("get_GO_association.pl -type transcript -o " + org + " > " + self.finalresultpath + "/" + org + ".gaf \n")
 
 				# Clean-up working writedbentry files to save disk space
 				tf.write("rm -rf \"" + orgpath + "\"\n")
