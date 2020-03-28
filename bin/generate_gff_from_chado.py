@@ -9,7 +9,6 @@ import configparser
 import argparse
 import time
 import re
-import pkg_resources
 
 
 #
@@ -313,12 +312,12 @@ class ChadoGffExporter:
 	def validate_arguments(self):
 
 		if len(self.configfile) == 0 or not os.path.isfile(self.configfile):
-			print('Configuration file not found: %s' % (self.configfile))
+			print('Configuration file not found: %s' % self.configfile)
 			exit(1)
 
-		if self.dump_all == False:
+		if not self.dump_all:
 			if len(self.org_list_file) == 0 or not os.path.isfile(self.org_list_file):
-				print('Organism file not found: %s' % (self.org_list_file))
+				print('Organism file not found: %s' % self.org_list_file)
 				exit(1)
 
 	#
@@ -355,13 +354,13 @@ class ChadoGffExporter:
 
 		try:
 			self.jobtitle = config.get('Job', 'name')
-		except Exception as err:
+		except Exception:
 			# Fall back to default name
 			pass
 
 		try:
 			self.__gt_filepath_wildcard_escaping = (config.get('General', 'gt_filepath_wildcard_escaping') == "True")
-		except Exception as err:
+		except Exception:
 			# Fall back to default value
 			pass
 
@@ -377,35 +376,35 @@ class ChadoGffExporter:
 		valid = True
 
 		if len(self.targetpath) <= 1 or (not os.path.isdir(self.targetpath)):
-			print('Configuration file target_path property does not point to a valid directory: %s' % (self.targetpath))
+			print('Configuration file target_path property does not point to a valid directory: %s' % self.targetpath)
 			valid = False
 
 		if len(self.gtbin) == 0 or shutil.which(self.gtbin) is None:
-			print('Configuration file genome_tools_bin property is not valid: %s' % (self.gtbin))
+			print('Configuration file genome_tools_bin property is not valid: %s' % self.gtbin)
 			valid = False
 
 		if len(self.writedbentrypath) == 0 or shutil.which(self.writedbentrypath) is None:
-			print('Configuration file write_db_entry_path property is not valid: %s' % (self.writedbentrypath))
+			print('Configuration file write_db_entry_path property is not valid: %s' % self.writedbentrypath)
 			valid = False
 
-		if self.apolloexport == True:
+		if self.apolloexport:
 			if len(self.apolloconverterapp) == 0 or shutil.which(self.apolloconverterapp) is None:
-				print('Configuration file apollo_gff_converter_app_path property is not valid: %s' % (self.apolloconverterapp))
+				print('Configuration file apollo_gff_converter_app_path property is not valid: %s' % self.apolloconverterapp)
 				valid = False
 
 			if self.copytoftpsiteflag == True and (len(self.ftpsitefolder) == 0 or not os.path.isdir(self.ftpsitefolder)):
-				print('Configuration file ftp_site_folder property does not point to a valid directory: %s' % (self.ftpsitefolder))
+				print('Configuration file ftp_site_folder property does not point to a valid directory: %s' % self.ftpsitefolder)
 				valid = False
 
 			if not re.match("[^@]+@[^@]+\.[^@]+", self.reportemailaddress):
-				print('Configuration file report_email_address property is not a valid email address: %s' % (self.reportemailaddress))
+				print('Configuration file report_email_address property is not a valid email address: %s' % self.reportemailaddress)
 				valid = False
 
 			if self.checkerjobstartdelay < 1:
-				print('Configuration file checker_job_start_delay_secs property is not permitted to be less than 1 second: %s' % (self.checkerjobstartdelay))
+				print('Configuration file checker_job_start_delay_secs property is not permitted to be less than 1 second: %s' % self.checkerjobstartdelay)
 				valid = False
 
-		if valid == False:
+		if not valid:
 			exit(1)
 
 	#
@@ -449,11 +448,11 @@ class ChadoGffExporter:
 		with open(self.org_list_file, "r") as f:
 
 			for line in f:
-				next = line.strip()
-				if next.startswith('#') or next == '':
+				next_line = line.strip()
+				if next_line.startswith('#') or next_line == '':
 					continue
 				else:
-					results.append(next)
+					results.append(next_line)
 
 		return results
 
@@ -461,7 +460,8 @@ class ChadoGffExporter:
 	#
 	# Run a bash shell process.
 	#
-	def run_bash(self, cmd):
+	@staticmethod
+	def run_bash(cmd):
 		subprocess.Popen(cmd, shell=True, executable='/bin/bash')
 
 
@@ -509,9 +509,9 @@ class ChadoGffExporter:
 			raise Exception('The target GFF file directory ' + self.targetpath + ' does not exist. Please create it or change it in the configuration file, and then re-run.')
 
 		# make dirs if required
-		for dir in [self.statuspath, self.logpath, self.scriptpath, self.finalresultpath]:
-			if not os.path.isdir(dir):
-				os.makedirs(dir)
+		for directory in [self.statuspath, self.logpath, self.scriptpath, self.finalresultpath]:
+			if not os.path.isdir(directory):
+				os.makedirs(directory)
 
 		# clean up old status files
 		for root, dirs, files in os.walk(self.statuspath, topdown=False):
@@ -528,7 +528,7 @@ class ChadoGffExporter:
 
 		# Make any Apollo export related directories if required
 		# and ensure we clear out any old files.
-		if self.apolloexport == True:
+		if self.apolloexport:
 
 			self.create_apollo_export_folders()
 
@@ -567,9 +567,7 @@ class ChadoGffExporter:
 	#
 	def get_organism_list(self, size):
 
-		rows = []
-
-		if self.dump_all == True:
+		if self.dump_all:
 
 			self.open_database_connection()
 
@@ -582,17 +580,15 @@ class ChadoGffExporter:
 			                "left join organism o on o.organism_id = op.organism_id " +
 			                "where cv.name = 'genedb_public' and op.value = 'yes';")
 				rows = cur.fetchall()
+				cur.close()
 
 			finally:
-				cur.close()
 				self.close_database_connection()
 
-			for sl in zip(*(iter(rows),) * size):
-				res = []
-				for elem in sl:
-					if elem is None:
-						continue
-					res.append(str(elem[0]))
+			for elem in rows[0:min(size, len(rows))]:
+				if elem is None:
+					continue
+				res = str(elem[0])
 				yield(res)
 
 		else:
@@ -632,6 +628,7 @@ class ChadoGffExporter:
 			tf.write("#!/bin/bash\n")
 
 			tf.write("JOB_ERROR_STATUS=0\n")
+			tf.write("WORKING_DIRECTORY=$(pwd)\n")
 
 			for org in sl:
 				orgpath = self.resultbasepath + "/" + org
@@ -641,26 +638,28 @@ class ChadoGffExporter:
 
 			for org in sl:
 				orgpath = self.resultbasepath + "/" + org
+				# navigate to directory
+				tf.write("cd " + orgpath + "\n")
 				# flatten directory structure
-				tf.write("find " + orgpath + " -type f " +
-					"-exec mv {} " + orgpath + " \\;\n")
+				tf.write("find . -type f -exec mv {} . \\;\n")
 				# clean up logs
-				tf.write("rm -f " + orgpath + "/tidylog.log\n")
+				tf.write("rm -f tidylog.log\n")
 				# remove empty dirs
-				tf.write("rmdir --ignore-fail-on-non-empty " + orgpath + "/?\n")
+				tf.write("find . -type d -delete\n")
 
 				# merge GFFs into one file per organism
-				search_path = self.escape_gt_wildcards("/*.gff.gz")
+				search_path = self.escape_gt_wildcards("*.gff.gz")
 				tf.write("GT_RETAINIDS=yes " + self.gtbin + " gff3 -sort -tidy -force -retainids -o " +
-					orgpath + "/" + org + ".gff3.gz -gzip " + orgpath + search_path + " 2> " + orgpath + "/" + org + ".tidylog \n")
+					org + ".gff3.gz -gzip " + search_path + " 2> " + org + ".tidylog \n")
 
 				# allow access to pathdev members
-				tf.write("chmod -R 775 " + orgpath + "\n")
+				tf.write("chmod -R 775 .\n")
 				# move result to separate directory
-				tf.write("cp " + orgpath + "/" + org + ".gff3.gz " + self.finalresultpath + "\n")
-				tf.write("cp " + orgpath + "/" + org + ".tidylog " + self.finalresultpath + "\n")
+				tf.write("cp " + org + ".gff3.gz " + self.finalresultpath + "\n")
+				tf.write("cp " + org + ".tidylog " + self.finalresultpath + "\n")
+				tf.write("cd $WORKING_DIRECTORY\n")
 
-				if self.apolloexport == False:
+				if not self.apolloexport:
 					# split sequences and annotations
 					tf.write("GT_RETAINIDS=yes " + self.gtbin + " inlineseq_split -seqfile "+ self.finalresultpath + "/" + org + ".genome.fasta -gff3file " + self.finalresultpath + "/" + org + ".noseq.gff3 " + self.finalresultpath + "/" + org + ".gff3.gz\n")
 					# gzip everything
@@ -680,14 +679,14 @@ class ChadoGffExporter:
 				# If this export is for Apollo then we must convert the gff file features to the correct parent-child relationship
 				# and copy to ftp site.
 				#
-				if self.apolloexport == True:
+				if self.apolloexport:
 
 					inputfile = self.finalresultpath + "/" + org + ".gff3.gz"
 					outputfile = self.apollogffpath + "/" + org + ".gff3.gz"
 
 					tf.write(self.construct_apollo_converter_app_cmds(inputfile, outputfile) + "\n")
 
-					if self.copytoftpsiteflag == True:
+					if self.copytoftpsiteflag:
 						tf.write("if [[ -s \"" + outputfile + "\" ]]; then\n")
 						tf.write("   cp " + outputfile + " " + self.ftptargetfolder + "/" + "\n")
 						tf.write("fi\n")
@@ -717,7 +716,7 @@ class ChadoGffExporter:
 			jobs.append(jobid)
 
 			# Submit script to LSF
-			if self.run_jobs_flag == True:
+			if self.run_jobs_flag:
 				print("starting job %d -- %s" % (i, scriptname))
 				self.run_bash(execline)
 
@@ -730,14 +729,14 @@ class ChadoGffExporter:
 		if len(jobs) > 0 and self.apolloexport == True:
 			print("waiting to start chado export completion checker job...")
 			time.sleep(self.checkerjobstartdelay)
-			self.run_checker_job(jobs, donefiles, errorlogs);
+			self.run_checker_job(donefiles, errorlogs)
 
 
 	#
 	# Create a job that runs upon completion of the export jobs.
 	# It checks successful completion and emails a report.
 	#
-	def run_checker_job(self, jobs, donefiles, errorlogs):
+	def run_checker_job(self, donefiles, errorlogs):
 
 		if len(donefiles) == 0:
 			return
@@ -752,7 +751,7 @@ class ChadoGffExporter:
 
 		cmd = self.construct_checker_job_invoker_cmd(checkerjobscript, checkerjobname)
 
-		if self.run_jobs_flag == True:
+		if self.run_jobs_flag:
 			print("starting chado export completion checker job")
 			self.run_bash(cmd)
 
@@ -797,15 +796,15 @@ class ChadoGffExporter:
 			try:
 				tmpstartdelay = config.get('ApolloExport', 'checker_job_start_delay_secs')
 				self.checkerjobstartdelay = int(tmpstartdelay.strip())
-			except ValueError as verr:
+			except ValueError:
 				raise Exception('The property checker_job_start_delay_secs is not a valid integer. Please correct the value before restarting.')
-			except Exception as ex:
+			except Exception:
 				pass
 
 			self.apollogffpath = self.targetpath + "/apollo_files"
 			self.apolloexport = True
 
-		except (configparser.NoSectionError):
+		except configparser.NoSectionError:
 			pass
 
 	#
