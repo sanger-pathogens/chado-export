@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='chado-export',
-    version='1.1.6',
+    version='1.1.7',
     description='generate_gff_from_chado.py: a script to export organism genome data in Chado, to GFF files.',
     package_dir={'': 'bin'},
 	package_data={'chado-export': ['bin/*.ini']},
