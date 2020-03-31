@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 
-import sys
 import stat
-import os
-import pkg_resources
-import unittest
 import io
 import tempfile
-import subprocess
 
 from nose import SkipTest
 
 from generate_gff_from_chado import * 
-from nose.tools import assert_equal, assert_not_equal, assert_raises, assert_true
 
 #
 # NOTE: This test class relies on the contents of the test orglist file.
@@ -30,14 +24,14 @@ class TestChadoGffExporter:
 	ORGLIST_FILE2= 'resources/test_generate_gff_from_chado.orglist2'
 	BASE_DIR = "/tmp/chado-export"
 	
-	ORG_FILE1_CHUNKS = [['Bsaltans', 'Bxylophilus', 'Eacervulina', 'Ebrunetti', 'Egranulosus', 'Emaxima', 'Emitis', 'Emultilocularis', 'Enecatrix', 'Epraecox'], \
-						['Etenella', 'Gpallida', 'Hmicrostoma', 'Lbraziliensis', 'Ldonovani_BPK282A1', 'Linfantum', 'Lmajor', 'Lmexicana', 'Ncaninum', 'Pberghei'], \
-						['Pchabaudi', 'Pfalciparum', 'Pgallinaceum', 'Pknowlesi', 'Pmalariae', 'Povale', 'Preichenowi', 'Prelictum', 'PvivaxP01', 'Pyoelii'], \
+	ORG_FILE1_CHUNKS = [['Bsaltans', 'Bxylophilus', 'Eacervulina', 'Ebrunetti', 'Egranulosus', 'Emaxima', 'Emitis', 'Emultilocularis', 'Enecatrix', 'Epraecox'],
+						['Etenella', 'Gpallida', 'Hmicrostoma', 'Lbraziliensis', 'Ldonovani_BPK282A1', 'Linfantum', 'Lmajor', 'Lmexicana', 'Ncaninum', 'Pberghei'],
+						['Pchabaudi', 'Pfalciparum', 'Pgallinaceum', 'Pknowlesi', 'Pmalariae', 'Povale', 'Preichenowi', 'Prelictum', 'PvivaxP01', 'Pyoelii'],
 						['Sjaponicum', 'Smansoni', 'Tannulata', 'Tbruceibrucei927', 'Tbruceigambiense', 'TbruceiLister427', 'Tcongolense', 'Tcruzi', 'Tsolium', 'Tvivax']]
 						
-	ORG_FILE2_CHUNKS = [['Bsaltans', 'Bxylophilus', 'Eacervulina'], \
-						['Ebrunetti', 'Egranulosus', 'Emaxima'], \
-						['Emitis', 'Emultilocularis', 'Enecatrix'], \
+	ORG_FILE2_CHUNKS = [['Bsaltans', 'Bxylophilus', 'Eacervulina'],
+						['Ebrunetti', 'Egranulosus', 'Emaxima'],
+						['Emitis', 'Emultilocularis', 'Enecatrix'],
 						['Epraecox']]
 	
 	def setup(self):
@@ -47,7 +41,8 @@ class TestChadoGffExporter:
 	def teardown(self):
 		self.chadoGffExporter = None
 
-	def checkAutoBuild(self):
+	@staticmethod
+	def checkAutoBuild():
 		if os.environ.get('TRAVIS_BUILD') and os.getenv('TRAVIS_BUILD') == 'yes':
 			raise SkipTest("Test skipped for automatic builds")
 			
@@ -176,7 +171,7 @@ class TestChadoGffExporter:
 		# Then - will read from chado!
 		i = 0
 		for org in self.chadoGffExporter.get_organism_list(10):
-			print("organism: %s" % (org))
+			print("organism: %s" % org)
 			
 			assert len(org) > 0
 			
@@ -198,7 +193,7 @@ class TestChadoGffExporter:
 		i = 0
 		for org in self.chadoGffExporter.get_organism_list(10):
 		
-			print("organism: %s" % (org))
+			print("organism: %s" % org)
 			
 			assert TestChadoGffExporter.ORG_FILE1_CHUNKS[i] == org
 			i = i + 1
@@ -218,7 +213,7 @@ class TestChadoGffExporter:
 		i = 0
 		for org in self.chadoGffExporter.get_organism_list(3):
 		
-			print("organism: %s" % (org))
+			print("organism: %s" % org)
 			
 			assert TestChadoGffExporter.ORG_FILE2_CHUNKS[i] == org
 			i = i + 1
@@ -294,8 +289,8 @@ class TestChadoGffExporter:
 		
 		# Then
 		# We should now have four generated files [scripts] based on the current test organism list file
-		list = os.listdir(self.chadoGffExporter.scriptpath_property) # dir is your directory path
-		num_scripts = len(list)
+		list_of_scripts = os.listdir(self.chadoGffExporter.scriptpath_property) # dir is your directory path
+		num_scripts = len(list_of_scripts)
 		assert num_scripts == 4
 
 	def test_13_writeCheckerScript(self):
@@ -370,10 +365,11 @@ class TestChadoGffExporter:
 		# Very basic validation tests using absolute paths
 
 		gtbin = None
-		writedbentrypath = None
+		writedbentry = None
 		apolloconverterapp = None
 		target_test_path = None
 		ftpsitefolder_test_path = None
+		dependency_temp_dir = None
 
 		try:
 			# Given
@@ -419,10 +415,11 @@ class TestChadoGffExporter:
 		# Very basic validation tests using system path to pick up dependency programs
 
 		gtbin = None
-		writedbentrypath = None
+		writedbentry = None
 		apolloconverterapp = None
 		target_test_path = None
 		ftpsitefolder_test_path = None
+		dependency_temp_dir = None
 
 		try:
 			# Given
